@@ -1,0 +1,226 @@
+{
+  "info": {
+    "name": "Django Auth & 6-Digit Email Verification (JWT)",
+    "description": "Complete collection for Django REST Framework JWT Authentication with 6-digit OTP email verification via Gmail.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Step 1: Register (Sends 6-digit OTP)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"johndoe\",\n  \"email\": \"midhunchandran230@gmail.com\",\n  \"password\": \"SecurePass123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone_number\": \"+1234567890\",\n  \"role\": \"BUYER\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/register/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "register", ""]
+        },
+        "description": "Step 1 of Registration: Validates input and dispatches a 6-digit OTP to the user's Gmail. User is NOT yet saved to the User database table."
+      }
+    },
+    {
+      "name": "2. Step 2: Verify OTP & Complete Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.tokens) {",
+              "    pm.collectionVariables.set('access_token', jsonData.tokens.access);",
+              "    pm.collectionVariables.set('refresh_token', jsonData.tokens.refresh);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"midhunchandran230@gmail.com\",\n  \"otp\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/verify-email/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "verify-email", ""]
+        },
+        "description": "Step 2: Submits the 6-digit OTP received in Gmail. Once verified, the user is officially created in the database and JWT tokens are returned."
+      }
+    },
+    {
+      "name": "3. Resend OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"midhunchandran230@gmail.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/resend-otp/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "resend-otp", ""]
+        },
+        "description": "Generates and emails a new 6-digit OTP if the previous code expired or was lost."
+      }
+    },
+    {
+      "name": "4. Login (Obtain JWT Tokens)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.access) {",
+              "    pm.collectionVariables.set('access_token', jsonData.access);",
+              "}",
+              "if (jsonData.refresh) {",
+              "    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"johndoe\",\n  \"password\": \"SecurePass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login", ""]
+        },
+        "description": "Logs in an existing, verified user and returns access and refresh JWT tokens."
+      }
+    },
+    {
+      "name": "5. Refresh Access Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.access) {",
+              "    pm.collectionVariables.set('access_token', jsonData.access);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/token/refresh/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "token", "refresh", ""]
+        },
+        "description": "Exchanges a valid refresh token for a fresh access token."
+      }
+    },
+    {
+      "name": "6. Get Current User Profile (Protected)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/profile/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "profile", ""]
+        },
+        "description": "Fetches current logged-in user profile. Requires Authorization Bearer token."
+      }
+    },
+    {
+      "name": "7. Update User Profile (Protected)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone_number\": \"+1987654321\",\n  \"bio\": \"Looking for a modern villa in Chicago.\",\n  \"city\": \"Chicago\",\n  \"address\": \"456 Michigan Ave\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/profile/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "profile", ""]
+        },
+        "description": "Updates profile details for the authenticated user."
+      }
+    }
+  ]
+}
