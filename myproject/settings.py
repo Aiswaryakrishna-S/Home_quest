@@ -87,7 +87,7 @@ DATABASES = {
         "USER": "homequest_user",
         "PASSWORD": "homequest123",
         "HOST": "localhost",
-        "PORT": "2222",
+        "PORT": "5432",
     }
 }
 # Password validation

@@ -46,6 +46,10 @@ class Property(models.Model):
     # ── Optional image upload ──
     image = models.ImageField(upload_to='property_images/', blank=True, null=True)
 
+    # ── Geographic Coordinates (Leaflet GPS Integration) ──
+    latitude  = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text='GPS Latitude')
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text='GPS Longitude')
+
     # ── Timestamps ──
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

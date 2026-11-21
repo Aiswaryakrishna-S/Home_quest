@@ -78,6 +78,23 @@ export const authAPI = {
     return response.data;
   },
 
+  // Forgot Password: Request 6-digit Reset OTP
+  forgotPassword: async (email) => {
+    const response = await api.post('/api/auth/forgot-password/', { email });
+    return response.data;
+  },
+
+  // Reset Password: Submit OTP and new password
+  resetPassword: async ({ email, otp, new_password, confirm_password }) => {
+    const response = await api.post('/api/auth/reset-password/', {
+      email,
+      otp,
+      new_password,
+      confirm_password,
+    });
+    return response.data;
+  },
+
   // Login
   login: async (username, password) => {
     const response = await api.post('/api/auth/login/', { username, password });
@@ -116,6 +133,86 @@ export const authAPI = {
 
   isAuthenticated: () => {
     return !!localStorage.getItem('access_token');
+  },
+};
+
+// Properties API helper methods
+export const propertyAPI = {
+  // Fetch properties (mine=true fetches only properties owned by current seller)
+  getMyProperties: async () => {
+    const response = await api.get('/api/properties/?mine=true');
+    return response.data;
+  },
+
+  getAllProperties: async (params = {}) => {
+    const response = await api.get('/api/properties/', { params });
+    return response.data;
+  },
+
+  // Fetch properties ordered by proximity to GPS coordinates
+  getNearbyProperties: async (lat, lng, radius = 50) => {
+    const response = await api.get('/api/properties/nearby/', {
+      params: { lat, lng, radius },
+    });
+    return response.data;
+  },
+
+  getProperty: async (id) => {
+    const response = await api.get(`/api/properties/${id}/`);
+    return response.data;
+  },
+
+  createProperty: async (formData) => {
+    const response = await api.post('/api/properties/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  updateProperty: async (id, formData) => {
+    const response = await api.patch(`/api/properties/${id}/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  deleteProperty: async (id) => {
+    const response = await api.delete(`/api/properties/${id}/`);
+    return response.data;
+  },
+
+  getPropertyEnquiries: async (id) => {
+    const response = await api.get(`/api/properties/${id}/enquiries/`);
+    return response.data;
+  },
+
+  // AI ML Property Price Valuation & Increment Engine
+  predictPrice: async (payload) => {
+    const response = await api.post('/api/properties/predict_price/', payload);
+    return response.data;
+  },
+};
+
+// Enquiries API helper methods
+export const enquiryAPI = {
+  getMyEnquiries: async (params = {}) => {
+    const response = await api.get('/api/properties/enquiries/', { params });
+    return response.data;
+  },
+
+  updateEnquiryStatus: async (id, status) => {
+    const response = await api.patch(`/api/properties/enquiries/${id}/`, { status });
+    return response.data;
+  },
+
+  deleteEnquiry: async (id) => {
+    const response = await api.delete(`/api/properties/enquiries/${id}/`);
+    return response.data;
+  },
+
+  createEnquiry: async (enquiryData) => {
+    const response = await api.post('/api/properties/enquiries/', enquiryData);
+    return response.data;
   },
 };
 

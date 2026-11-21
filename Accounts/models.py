@@ -68,3 +68,23 @@ class PendingRegistration(models.Model):
 
     def __str__(self):
         return f"Pending: {self.username} ({self.email}) - Code: {self.otp}"
+
+
+class PasswordResetOTP(models.Model):
+    """Holds 6-digit OTP for password reset requests."""
+    email = models.EmailField(verbose_name="User Email")
+    otp = models.CharField(max_length=6, verbose_name="Reset OTP")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        # 6-digit OTP expires in 10 minutes
+        return timezone.now() <= self.created_at + timedelta(minutes=10)
+
+    @classmethod
+    def create_or_update(cls, email, otp_code):
+        # Invalidate any older reset attempts for this email
+        cls.objects.filter(email__iexact=email).delete()
+        return cls.objects.create(email=email.strip().lower(), otp=otp_code)
+
+    def __str__(self):
+        return f"Reset OTP: {self.email} - Code: {self.otp}"

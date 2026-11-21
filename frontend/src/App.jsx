@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { authAPI } from './api';
+import HomePage from './HomePage';
+import OwnerDashboard from './OwnerDashboard';
 import './App.css';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register' | 'profile'
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'login' | 'register' | 'profile' | 'owner-dashboard'
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ type: '', message: '' });
@@ -25,6 +27,15 @@ function App() {
   const [loginData, setLoginData] = useState({
     username: '',
     password: '',
+  });
+
+  // Forgot Password state
+  const [forgotStep, setForgotStep] = useState(1); // 1 = enter email, 2 = enter OTP and new passwords
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetData, setResetData] = useState({
+    otp: '',
+    new_password: '',
+    confirm_password: '',
   });
 
   // Profile edit state
@@ -58,7 +69,9 @@ function App() {
         city: data.city || '',
         address: data.address || '',
       });
-      setActiveTab('profile');
+      // Navigate Seller to Owner Dashboard, otherwise Profile
+      const isSeller = data.role === 'SELLER' || data.role === 'ADMIN';
+      setActiveTab(isSeller ? 'owner-dashboard' : 'profile');
     } catch (err) {
       console.error(err);
       authAPI.logout();
@@ -95,7 +108,8 @@ function App() {
       const res = await authAPI.verifyEmail(regData.email, otp);
       showAlert('success', res.message || 'Account verified and created successfully!');
       setUser(res.user);
-      setActiveTab('profile');
+      const isSeller = res.user?.role === 'SELLER' || res.user?.role === 'ADMIN';
+      setActiveTab(isSeller ? 'owner-dashboard' : 'profile');
       setRegStep(1);
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Invalid or expired OTP.';
@@ -138,6 +152,57 @@ function App() {
     }
   };
 
+  // Step 1: Request Password Reset OTP
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await authAPI.forgotPassword(forgotEmail);
+      showAlert('success', res.message || 'Reset code sent! Check your email inbox.');
+      setForgotStep(2);
+    } catch (err) {
+      const errMsg =
+        err.response?.data?.email?.[0] ||
+        err.response?.data?.error ||
+        'Failed to process password reset request.';
+      showAlert('error', errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Submit OTP & Set New Password
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (resetData.new_password !== resetData.confirm_password) {
+      showAlert('error', 'New password and confirm password do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authAPI.resetPassword({
+        email: forgotEmail,
+        otp: resetData.otp,
+        new_password: resetData.new_password,
+        confirm_password: resetData.confirm_password,
+      });
+      showAlert('success', res.message || 'Password reset successfully! Please sign in.');
+      setForgotStep(1);
+      setForgotEmail('');
+      setResetData({ otp: '', new_password: '', confirm_password: '' });
+      setActiveTab('login');
+    } catch (err) {
+      const errMsg =
+        err.response?.data?.error ||
+        err.response?.data?.confirm_password?.[0] ||
+        err.response?.data?.new_password?.[0] ||
+        'Failed to reset password. Please check your verification code.';
+      showAlert('error', errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle Profile Update
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -158,62 +223,133 @@ function App() {
   const handleLogout = () => {
     authAPI.logout();
     setUser(null);
-    setActiveTab('login');
+    setActiveTab('home');
     showAlert('info', 'Logged out successfully.');
   };
 
-  return (
-    <div className="container">
-      <header className="header">
-        <h1>Django + React Authentication</h1>
-        <div className="auth-badge">
-          {user ? (
-            <span className="badge logged-in">
-              Logged in as: <strong>{user.username}</strong> ({user.role})
-            </span>
-          ) : (
-            <span className="badge not-logged-in">Not Logged In</span>
-          )}
-        </div>
-      </header>
+  // If activeTab is home, render the Public Home Page
+  if (activeTab === 'home') {
+    return (
+      <HomePage
+        user={user}
+        onNavigateAuth={(tab) => setActiveTab(tab)}
+        onNavigateDashboard={(tab) => setActiveTab(tab)}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
-      {alert.message && (
-        <div className={`alert alert-${alert.type}`}>
-          {alert.message}
-        </div>
-      )}
-
-      <nav className="tab-nav">
-        {!user && (
-          <>
+  // If user is Seller and on owner-dashboard, render full-featured Owner Dashboard
+  if (user && activeTab === 'owner-dashboard') {
+    return (
+      <div className="owner-app-container">
+        <div className="top-quick-bar">
+          <span className="quick-welcome">
+            👋 Welcome, <strong>{user.first_name || user.username}</strong> &bull; Role: <span className="badge role-badge">{user.role}</span>
+          </span>
+          <div className="top-quick-links">
             <button
-              className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
-              onClick={() => setActiveTab('login')}
+              className="quick-nav-btn"
+              onClick={() => setActiveTab('home')}
             >
-              Login
+              🏡 Home Page
             </button>
             <button
-              className={`tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-              onClick={() => setActiveTab('register')}
+              className="quick-nav-btn active"
+              onClick={() => setActiveTab('owner-dashboard')}
             >
-              Register (with Email OTP)
+              🏢 Owner Dashboard
             </button>
-          </>
-        )}
-        {user && (
-          <>
             <button
-              className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+              className="quick-nav-btn"
               onClick={() => setActiveTab('profile')}
             >
-              My Profile
+              👤 Profile & Account
             </button>
-            <button className="tab-btn logout-btn" onClick={handleLogout}>
-              Logout
+            <button className="quick-nav-btn btn-logout-quick" onClick={handleLogout}>
+              🚪 Sign Out
             </button>
-          </>
+          </div>
+        </div>
+        <OwnerDashboard user={user} onLogout={handleLogout} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-page-wrapper">
+      <div className="container">
+        {/* Back to Home Button */}
+        <div className="back-home-bar">
+          <button className="back-home-btn" onClick={() => setActiveTab('home')}>
+            &larr; Back to Home Page
+          </button>
+        </div>
+
+        <header className="header">
+          <h1>HomeQuest Real Estate</h1>
+          <div className="auth-badge">
+            {user ? (
+              <span className="badge logged-in">
+                Logged in as: <strong>{user.username}</strong> ({user.role})
+              </span>
+            ) : (
+              <span className="badge not-logged-in">Not Logged In</span>
+            )}
+          </div>
+        </header>
+
+        {alert.message && (
+          <div className={`alert alert-${alert.type}`}>
+            {alert.message}
+          </div>
         )}
-      </nav>
+
+        <nav className="tab-nav">
+          {!user && (
+            <>
+              <button
+                className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+                onClick={() => setActiveTab('login')}
+              >
+                Login
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+                onClick={() => setActiveTab('register')}
+              >
+                Register (with Email OTP)
+              </button>
+            </>
+          )}
+          {user && (
+            <>
+              <button
+                className="tab-btn"
+                onClick={() => setActiveTab('home')}
+              >
+                🏡 Home
+              </button>
+              {(user.role === 'SELLER' || user.role === 'ADMIN') && (
+                <button
+                  className={`tab-btn ${activeTab === 'owner-dashboard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('owner-dashboard')}
+                >
+                  🏢 Owner Dashboard
+                </button>
+              )}
+              <button
+                className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                My Profile
+              </button>
+              <button className="tab-btn logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
+          )}
+        </nav>
 
       <main className="card">
         {/* LOGIN TAB */}
@@ -236,7 +372,19 @@ function App() {
               </div>
 
               <div className="form-group">
-                <label>Password</label>
+                <div className="label-with-action">
+                  <label>Password</label>
+                  <button
+                    type="button"
+                    className="forgot-link-btn"
+                    onClick={() => {
+                      setForgotStep(1);
+                      setActiveTab('forgot-password');
+                    }}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <input
                   type="password"
                   required
@@ -252,6 +400,118 @@ function App() {
                 {loading ? 'Logging in...' : 'Sign In'}
               </button>
             </form>
+          </section>
+        )}
+
+        {/* FORGOT PASSWORD TAB */}
+        {activeTab === 'forgot-password' && !user && (
+          <section className="forgot-password-card">
+            {forgotStep === 1 ? (
+              <>
+                <h2>Reset Your Password</h2>
+                <p className="subtitle">
+                  Enter your registered email address. We will send you a 6-digit OTP code to verify and reset your password.
+                </p>
+                <form onSubmit={handleForgotPasswordSubmit}>
+                  <div className="form-group">
+                    <label>Registered Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. yourname@example.com"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <button type="submit" className="submit-btn" disabled={loading}>
+                    {loading ? 'Sending Reset Code...' : 'Send 6-Digit Reset Code'}
+                  </button>
+
+                  <div className="auth-back-action">
+                    <button
+                      type="button"
+                      className="link-btn-back"
+                      onClick={() => setActiveTab('login')}
+                    >
+                      &larr; Remember your password? Back to Login
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2>Set New Password</h2>
+                <p className="subtitle">
+                  Enter the 6-digit OTP sent to <strong>{forgotEmail}</strong> and enter your new password.
+                </p>
+                <form onSubmit={handleResetPasswordSubmit}>
+                  <div className="form-group">
+                    <label>6-Digit Verification Code</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength="6"
+                      placeholder="123456"
+                      value={resetData.otp}
+                      onChange={(e) =>
+                        setResetData({ ...resetData, otp: e.target.value })
+                      }
+                      className="otp-input"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>New Password (min 8 characters)</label>
+                    <input
+                      type="password"
+                      required
+                      minLength="8"
+                      placeholder="Enter new strong password"
+                      value={resetData.new_password}
+                      onChange={(e) =>
+                        setResetData({ ...resetData, new_password: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Confirm New Password</label>
+                    <input
+                      type="password"
+                      required
+                      minLength="8"
+                      placeholder="Re-enter new password"
+                      value={resetData.confirm_password}
+                      onChange={(e) =>
+                        setResetData({ ...resetData, confirm_password: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <button type="submit" className="submit-btn" disabled={loading}>
+                    {loading ? 'Resetting Password...' : 'Reset Password & Sign In'}
+                  </button>
+
+                  <div className="auth-step-actions">
+                    <button
+                      type="button"
+                      className="link-btn-back"
+                      onClick={() => setForgotStep(1)}
+                    >
+                      Change Email
+                    </button>
+                    <button
+                      type="button"
+                      className="link-btn-back"
+                      onClick={() => setActiveTab('login')}
+                    >
+                      Back to Login
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </section>
         )}
 
@@ -493,6 +753,7 @@ function App() {
         )}
       </main>
     </div>
+  </div>
   );
 }
 

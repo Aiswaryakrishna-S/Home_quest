@@ -1,6 +1,7 @@
 # =====================================================================
-# HOMEQUEST AI - PROPERTY & ENQUIRY VIEWSETS
+# HOMEQUEST AI - PROPERTY & ENQUIRY VIEWSETS (WITH GEOLOCATION LOGIC)
 # =====================================================================
+import math
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,13 +9,70 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Property, Enquiry
 from .serializers import PropertySerializer, EnquirySerializer
 from .permissions import IsOwnerOrReadOnly
+from .ml_pricing import predict_and_analyze_property
+
+
+# Known reference coordinates for popular cities and Kerala districts (fallback when GPS isn't explicitly entered)
+CITY_COORDINATES = {
+    # Kerala Districts & Key Hubs
+    'ernakulam': (9.9816, 76.2999),
+    'kochi': (9.9312, 76.2673),
+    'cochin': (9.9312, 76.2673),
+    'kakkanad': (10.0159, 76.3419),
+    'edappally': (10.0261, 76.3125),
+    'aluva': (10.1076, 76.3516),
+    'thiruvananthapuram': (8.5241, 76.9366),
+    'trivandrum': (8.5241, 76.9366),
+    'kazhakkoottam': (8.5686, 76.8731),
+    'kozhikode': (11.2588, 75.7804),
+    'calicut': (11.2588, 75.7804),
+    'thrissur': (10.5276, 76.2144),
+    'kottayam': (9.5916, 76.5222),
+    'kollam': (8.8932, 76.6141),
+    'alappuzha': (9.4981, 76.3388),
+    'palakkad': (10.7867, 76.6548),
+    'malappuram': (11.0510, 76.0711),
+    'kannur': (11.8745, 75.3704),
+    'kasaragod': (12.4996, 74.9869),
+    'pathanamthitta': (9.2648, 76.7870),
+    'idukki': (9.8959, 76.7184),
+    'wayanad': (11.6103, 76.0827),
+    # Other Major Indian Metros
+    'mumbai': (19.0760, 72.8777),
+    'delhi': (28.7041, 77.1025),
+    'bangalore': (12.9716, 77.5946),
+    'bengaluru': (12.9716, 77.5946),
+    'hyderabad': (17.3850, 78.4867),
+    'chennai': (13.0827, 80.2707),
+    'kolkata': (22.5726, 88.3639),
+    'pune': (18.5204, 73.8567),
+    'ahmedabad': (23.0225, 72.5714),
+    'chicago': (41.8781, -87.6298),
+    'new york': (40.7128, -74.0060),
+    'san francisco': (37.7749, -122.4194),
+    'los angeles': (34.0522, -118.2437),
+    'london': (51.5074, -0.1278),
+    'dubai': (25.2048, 55.2708),
+}
+
+
+def calculate_haversine_distance(lat1, lon1, lat2, lon2):
+    """Calculates great-circle distance between two GPS coordinates in kilometers."""
+    R = 6371.0  # Earth's radius in kilometers
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2 +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return round(R * c, 2)
 
 
 class PropertyViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for handling full CRUD on Properties:
-    - GET /properties/ -> List properties (supports ?mine=true or ?seller=me to fetch only seller's properties)
-    - POST /properties/ -> Create property (multipart/form-data supported)
+    ViewSet for handling full CRUD on Properties with Leaflet GPS Geolocation:
+    - GET /properties/ -> List properties (supports ?lat=...&lng=...&radius=... to filter and sort by distance)
+    - GET /properties/nearby/ -> Direct endpoint to fetch properties ordered by proximity to GPS coordinates
+    - POST /properties/ -> Create property (supports latitude, longitude, and multipart image)
     - GET /properties/{id}/ -> Retrieve details
     - PUT /properties/{id}/ -> Update property
     - PATCH /properties/{id}/ -> Partially update property
@@ -48,8 +106,180 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         return qs.order_by('-created_at')
 
+    def list(self, request, *args, **kwargs):
+        """
+        Overrides list to support real-time proximity sorting & distance calculation
+        via ?lat=...&lng=...&radius=... query params.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+
+        lat_param = request.query_params.get('lat') or request.query_params.get('latitude')
+        lng_param = request.query_params.get('lng') or request.query_params.get('longitude')
+        radius_param = request.query_params.get('radius')  # in kilometers
+
+        if lat_param and lng_param:
+            try:
+                user_lat = float(lat_param)
+                user_lng = float(lng_param)
+                max_radius = float(radius_param) if radius_param else None
+
+                properties_list = list(queryset)
+                annotated_props = []
+
+                for prop in properties_list:
+                    # Resolve property coordinates (stored in DB or inferred from city)
+                    p_lat = float(prop.latitude) if prop.latitude is not None else None
+                    p_lng = float(prop.longitude) if prop.longitude is not None else None
+
+                    if (p_lat is None or p_lng is None) and prop.city:
+                        city_key = prop.city.strip().lower()
+                        if city_key in CITY_COORDINATES:
+                            p_lat, p_lng = CITY_COORDINATES[city_key]
+
+                    if p_lat is not None and p_lng is not None:
+                        dist = calculate_haversine_distance(user_lat, user_lng, p_lat, p_lng)
+                        prop.distance_km = dist
+                        if prop.latitude is None:
+                            prop.latitude = p_lat
+                            prop.longitude = p_lng
+
+                        if max_radius is None or dist <= max_radius:
+                            annotated_props.append(prop)
+                    else:
+                        prop.distance_km = None
+                        if max_radius is None:
+                            annotated_props.append(prop)
+
+                # Sort by proximity: closest properties first
+                annotated_props.sort(key=lambda p: (p.distance_km is None, p.distance_km or 999999))
+                serializer = self.get_serializer(annotated_props, many=True)
+                return Response(serializer.data)
+            except (ValueError, TypeError):
+                pass
+
+        # Standard non-geo listing
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def nearby(self, request):
+        """
+        Dedicated endpoint to fetch properties near a specific GPS coordinate:
+        GET /api/properties/nearby/?lat=19.076&lng=72.877&radius=50
+        """
+        lat_param = request.query_params.get('lat')
+        lng_param = request.query_params.get('lng')
+
+        if not lat_param or not lng_param:
+            return Response(
+                {"error": "Both 'lat' and 'lng' query parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user_lat = float(lat_param)
+            user_lng = float(lng_param)
+            radius = float(request.query_params.get('radius', 50.0))  # Default 50 km
+        except ValueError:
+            return Response(
+                {"error": "Invalid coordinates or radius supplied."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        qs = Property.objects.all().select_related('seller')
+        nearby_props = []
+
+        for prop in qs:
+            p_lat = float(prop.latitude) if prop.latitude is not None else None
+            p_lng = float(prop.longitude) if prop.longitude is not None else None
+
+            if (p_lat is None or p_lng is None) and prop.city:
+                city_key = prop.city.strip().lower()
+                if city_key in CITY_COORDINATES:
+                    p_lat, p_lng = CITY_COORDINATES[city_key]
+
+            if p_lat is not None and p_lng is not None:
+                dist = calculate_haversine_distance(user_lat, user_lng, p_lat, p_lng)
+                if dist <= radius:
+                    prop.distance_km = dist
+                    if prop.latitude is None:
+                        prop.latitude = p_lat
+                        prop.longitude = p_lng
+                    nearby_props.append(prop)
+
+        # Sort closest first
+        nearby_props.sort(key=lambda p: p.distance_km)
+        serializer = self.get_serializer(nearby_props, many=True)
+        return Response({
+            "user_location": {"latitude": user_lat, "longitude": user_lng},
+            "radius_km": radius,
+            "count": len(nearby_props),
+            "results": serializer.data
+        })
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    def predict_price(self, request):
+        """
+        AI ML Property Valuation & Area Increment Engine for Kerala:
+        POST /api/properties/predict_price/
+        Payload:
+        {
+            "city": "Kakkanad",
+            "property_type": "BUILDING",
+            "area_sqft": 1800,
+            "latitude": 10.0159,
+            "longitude": 76.3419,
+            "current_price": 7500000
+        }
+        """
+        data = request.data
+        city = data.get('city') or 'Kochi'
+        property_type = data.get('property_type') or 'BUILDING'
+        area_sqft = data.get('area_sqft') or 1500
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        current_price = data.get('current_price') or data.get('price')
+
+        try:
+            analysis = predict_and_analyze_property(
+                city=city,
+                property_type=property_type,
+                area_sqft=area_sqft,
+                latitude=latitude,
+                longitude=longitude,
+                current_price=current_price
+            )
+            return Response(analysis, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to calculate property valuation: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
     def perform_create(self, serializer):
-        serializer.save(seller=self.request.user)
+        # Auto-fill coordinates from city if seller didn't provide lat/long
+        validated_data = serializer.validated_data
+        lat = validated_data.get('latitude')
+        lng = validated_data.get('longitude')
+        city = (validated_data.get('city') or '').strip().lower()
+
+        if (lat is None or lng is None) and city in CITY_COORDINATES:
+            city_lat, city_lng = CITY_COORDINATES[city]
+            serializer.save(seller=self.request.user, latitude=city_lat, longitude=city_lng)
+        else:
+            serializer.save(seller=self.request.user)
+
+    def perform_update(self, serializer):
+        validated_data = serializer.validated_data
+        lat = validated_data.get('latitude')
+        lng = validated_data.get('longitude')
+        city = (validated_data.get('city') or '').strip().lower()
+
+        if (lat is None or lng is None) and city in CITY_COORDINATES:
+            city_lat, city_lng = CITY_COORDINATES[city]
+            serializer.save(latitude=city_lat, longitude=city_lng)
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['get', 'post'], permission_classes=[permissions.AllowAny])
     def enquiries(self, request, pk=None):

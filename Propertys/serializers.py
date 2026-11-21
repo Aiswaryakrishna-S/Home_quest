@@ -6,6 +6,7 @@ class PropertySerializer(serializers.ModelSerializer):
     seller_name = serializers.SerializerMethodField()
     enquiry_count = serializers.SerializerMethodField()
     area = serializers.IntegerField(source='area_sqft', required=False, allow_null=True)
+    distance_km = serializers.FloatField(read_only=True, required=False, default=None)
 
     class Meta:
         model = Property
@@ -24,11 +25,14 @@ class PropertySerializer(serializers.ModelSerializer):
             'area',
             'property_type',
             'image',
+            'latitude',
+            'longitude',
+            'distance_km',
             'enquiry_count',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'seller', 'seller_name', 'enquiry_count', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'seller', 'seller_name', 'enquiry_count', 'distance_km', 'created_at', 'updated_at']
 
     def get_seller_name(self, obj):
         if obj.seller:
