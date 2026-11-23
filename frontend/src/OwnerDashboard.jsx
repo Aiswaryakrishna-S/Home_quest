@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { propertyAPI, enquiryAPI } from './api';
+import { propertyAPI, enquiryAPI, getPropertyImageUrl, PRESET_PROPERTY_IMAGES } from './api';
 import AIPriceAdvisor from './AIPriceAdvisor';
 import './OwnerDashboard.css';
 
@@ -82,9 +82,21 @@ export default function OwnerDashboard({ user, onLogout }) {
       latitude: prop.latitude || '',
       longitude: prop.longitude || '',
     });
-    setImagePreview(prop.image || null);
+    setImagePreview(getPropertyImageUrl(prop));
     setSelectedImage(null);
     setActiveSection('add');
+  };
+
+  const handleSelectPresetImage = async (preset) => {
+    try {
+      const res = await fetch(preset.url);
+      const blob = await res.blob();
+      const file = new File([blob], `${preset.name.toLowerCase().replace(/\s+/g, '_')}.jpg`, { type: 'image/jpeg' });
+      setSelectedImage(file);
+      setImagePreview(preset.url);
+    } catch {
+      setImagePreview(preset.url);
+    }
   };
 
   // Reset Add/Edit Form
@@ -411,7 +423,7 @@ export default function OwnerDashboard({ user, onLogout }) {
                       {properties.slice(0, 3).map((p) => (
                         <div key={p.id} className="mini-prop-card">
                           <img
-                            src={p.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=400&q=80'}
+                            src={getPropertyImageUrl(p)}
                             alt={p.title}
                             className="mini-thumb"
                           />
@@ -447,12 +459,17 @@ export default function OwnerDashboard({ user, onLogout }) {
                       {enquiries.slice(0, 3).map((e) => (
                         <div key={e.id} className="mini-enq-card">
                           <div className="mini-enq-header">
-                            <strong>{e.name}</strong>
+                            <div>
+                              <strong>{e.name}</strong>
+                              {e.message?.includes('AI Express Interest') && (
+                                <span className="ai-inquiry-tag" style={{ marginLeft: '6px' }}>✨ AI Express</span>
+                              )}
+                            </div>
                             <span className={`status-pill status-${(e.status || 'pending').toLowerCase()}`}>
                               {e.status || 'PENDING'}
                             </span>
                           </div>
-                          <p className="mini-msg">"{e.message}"</p>
+                          <p className="mini-msg">"{e.message?.replace(/^\[.*?\]\n?/, '')}"</p>
                           <span className="mini-date">
                             Property: {e.property_title || 'Listing #' + e.property}
                           </span>
@@ -534,10 +551,7 @@ export default function OwnerDashboard({ user, onLogout }) {
                     <div key={prop.id} className="property-card">
                       <div className="prop-img-container">
                         <img
-                          src={
-                            prop.image ||
-                            'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80'
-                          }
+                          src={getPropertyImageUrl(prop)}
                           alt={prop.title}
                           className="prop-img"
                         />
@@ -796,6 +810,42 @@ export default function OwnerDashboard({ user, onLogout }) {
                       📁 {selectedImage ? selectedImage.name : 'Choose Image File or Drag Here'}
                     </label>
                   </div>
+                  {/* Preset High-Res Kerala Sample Photos */}
+                  <div style={{ marginTop: '0.65rem' }}>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '0.35rem', fontWeight: 600 }}>
+                      Or choose a high-resolution sample photo:
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                      {PRESET_PROPERTY_IMAGES.map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => handleSelectPresetImage(preset)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.3rem 0.6rem',
+                            borderRadius: '6px',
+                            border: imagePreview === preset.url ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
+                            background: imagePreview === preset.url ? '#eff6ff' : '#ffffff',
+                            color: imagePreview === preset.url ? '#1d4ed8' : '#334155',
+                            fontSize: '0.76rem',
+                            cursor: 'pointer',
+                            fontWeight: imagePreview === preset.url ? 700 : 500,
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <img
+                            src={preset.url}
+                            alt={preset.name}
+                            style={{ width: 18, height: 18, borderRadius: '3px', objectFit: 'cover' }}
+                          />
+                          {preset.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {imagePreview && (
                     <div className="preview-container">
                       <img src={imagePreview} alt="Preview" className="img-preview" />
@@ -882,7 +932,12 @@ export default function OwnerDashboard({ user, onLogout }) {
                         <tr key={enq.id}>
                           <td>
                             <div className="client-cell">
-                              <strong>{enq.name}</strong>
+                              <div>
+                                <strong>{enq.name}</strong>
+                                {enq.message?.includes('AI Express Interest') && (
+                                  <span className="ai-inquiry-tag">✨ AI Express Buyer</span>
+                                )}
+                              </div>
                               <a href={`mailto:${enq.email}`} className="cell-link">
                                 ✉️ {enq.email}
                               </a>
@@ -902,7 +957,7 @@ export default function OwnerDashboard({ user, onLogout }) {
                             )}
                           </td>
                           <td className="message-cell">
-                            <p className="enq-msg-text">"{enq.message}"</p>
+                            <p className="enq-msg-text">"{enq.message?.replace(/^\[.*?\]\n?/, '')}"</p>
                           </td>
                           <td>
                             <span className="date-cell">

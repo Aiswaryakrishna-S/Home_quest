@@ -10,10 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file automatically
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, val = line.split('=', 1)
+                key = key.strip()
+                val = val.strip().strip("'\"")
+                if key not in os.environ:
+                    os.environ[key] = val
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'Accounts',
     'Propertys',
+    'Chatbot',
 ]
 
 AUTH_USER_MODEL = 'Accounts.User'
@@ -159,7 +174,18 @@ EMAIL_HOST_USER = 'kavithab253@gmail.com'
 EMAIL_HOST_PASSWORD = 'cikrjljgdszoxrjy'
 DEFAULT_FROM_EMAIL = 'kavithab253@gmail.com'
 
-# CORS Configuration for React Frontend
+# CORS & CSRF Configuration for React Frontend
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+
+# Google Gemini API Key for AI RAG Chatbot
+import os
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 

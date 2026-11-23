@@ -2,14 +2,20 @@
 # HOMEQUEST AI - PROPERTY & ENQUIRY VIEWSETS (WITH GEOLOCATION LOGIC)
 # =====================================================================
 import math
+import uuid
+import datetime
+from decimal import Decimal
+from django.db import models
+from django.utils import timezone
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Property, Enquiry
-from .serializers import PropertySerializer, EnquirySerializer
+from .models import Property, Enquiry, PropertyPurchase
+from .serializers import PropertySerializer, EnquirySerializer, PropertyPurchaseSerializer
 from .permissions import IsOwnerOrReadOnly
 from .ml_pricing import predict_and_analyze_property
+from .agreement_generator import generate_sale_agreement_text
 
 
 # Known reference coordinates for popular cities and Kerala districts (fallback when GPS isn't explicitly entered)
@@ -349,3 +355,162 @@ class EnquiryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         serializer.save(user=user)
+
+
+class PropertyPurchaseViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Property Buy Transactions & Legal Agreement Documentation:
+    - POST /api/properties/purchases/ -> Initiate purchase, pay token, and generate Sale Agreement Deed
+    - GET /api/properties/purchases/ -> View purchases (buyer sees their purchases, seller sees purchases for their properties)
+    - GET /api/properties/purchases/{id}/ -> Retrieve agreement details & deed
+    - POST /api/properties/purchases/{id}/sign/ -> Digital signature confirmation
+    """
+    serializer_class = PropertyPurchaseSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            # Allow querying by agreement_number or buyer_email if provided in query params
+            buyer_email = self.request.query_params.get('buyer_email')
+            agr_num = self.request.query_params.get('agreement_number')
+            if buyer_email:
+                return PropertyPurchase.objects.filter(buyer_email__iexact=buyer_email).select_related('property', 'property__seller', 'buyer')
+            if agr_num:
+                return PropertyPurchase.objects.filter(agreement_number=agr_num).select_related('property', 'property__seller', 'buyer')
+            return PropertyPurchase.objects.none()
+
+        if user.is_staff or getattr(user, 'role', '') == 'ADMIN':
+            return PropertyPurchase.objects.all().select_related('property', 'property__seller', 'buyer')
+
+        # If user is seller, return purchases on their properties; if buyer, return their purchases
+        is_seller = getattr(user, 'role', '') == 'SELLER'
+        if is_seller:
+            return PropertyPurchase.objects.filter(property__seller=user).select_related('property', 'property__seller', 'buyer')
+        else:
+            return PropertyPurchase.objects.filter(
+                models.Q(buyer=user) | models.Q(buyer_email__iexact=user.email)
+            ).select_related('property', 'property__seller', 'buyer')
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        property_id = data.get('property') or data.get('property_id')
+        if not property_id:
+            return Response({"error": "Property ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            property_obj = Property.objects.select_related('seller').get(id=property_id)
+        except Property.DoesNotExist:
+            return Response({"error": f"Property #{property_id} was not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Automatically determine buyer details
+        buyer_user = request.user if request.user.is_authenticated else None
+        buyer_name = (data.get('buyer_name') or '').strip()
+        buyer_email = (data.get('buyer_email') or '').strip()
+        buyer_phone = (data.get('buyer_phone') or '').strip()
+        buyer_address = (data.get('buyer_address') or '').strip()
+
+        if buyer_user:
+            if not buyer_name:
+                buyer_name = f"{buyer_user.first_name} {buyer_user.last_name}".strip() or buyer_user.username
+            if not buyer_email and buyer_user.email:
+                buyer_email = buyer_user.email
+            if not buyer_phone and getattr(buyer_user, 'phone_number', None):
+                buyer_phone = buyer_user.phone_number
+
+        if not buyer_name:
+            buyer_name = "HomeQuest Verified Buyer"
+        if not buyer_email:
+            buyer_email = "buyer@homequest.ai"
+
+        # Financial Calculations
+        try:
+            agreed_price = Decimal(str(data.get('agreed_price') or property_obj.price))
+        except Exception:
+            agreed_price = Decimal(str(property_obj.price))
+
+        try:
+            token_amount = Decimal(str(data.get('token_amount') or 50000.00))
+        except Exception:
+            token_amount = Decimal('50000.00')
+
+        if token_amount > agreed_price:
+            token_amount = agreed_price
+
+        balance_amount = agreed_price - token_amount
+        stamp_duty = (agreed_price * Decimal('0.08')).quantize(Decimal('0.01'))        # Kerala Stamp Duty (8%)
+        registration_fee = (agreed_price * Decimal('0.02')).quantize(Decimal('0.01'))  # Kerala Registration Fee (2%)
+        total_estimated_cost = agreed_price + stamp_duty + registration_fee
+
+        payment_method = data.get('payment_method') or 'UPI'
+        transaction_id = data.get('transaction_id') or f"TXN-KL-{uuid.uuid4().hex[:8].upper()}"
+
+        # Generate Unique Agreement Reference Number: HQ-KL-2026-XXXXXX
+        agr_num = f"HQ-KL-{datetime.datetime.now().year}-{uuid.uuid4().hex[:6].upper()}"
+
+        settlement_days = int(data.get('settlement_days') or 60)
+        settlement_deadline = datetime.date.today() + datetime.timedelta(days=settlement_days)
+
+        # Generate full legally structured sale agreement document
+        agreement_text = generate_sale_agreement_text(
+            agreement_number=agr_num,
+            property_obj=property_obj,
+            buyer_name=buyer_name,
+            buyer_email=buyer_email,
+            buyer_phone=buyer_phone,
+            buyer_address=buyer_address,
+            agreed_price=agreed_price,
+            token_amount=token_amount,
+            balance_amount=balance_amount,
+            stamp_duty=stamp_duty,
+            registration_fee=registration_fee,
+            total_cost=total_estimated_cost,
+            payment_method=payment_method,
+            transaction_id=transaction_id,
+            settlement_deadline_str=settlement_deadline.strftime('%d %B, %Y')
+        )
+
+        purchase = PropertyPurchase.objects.create(
+            agreement_number=agr_num,
+            property=property_obj,
+            buyer=buyer_user,
+            buyer_name=buyer_name,
+            buyer_email=buyer_email,
+            buyer_phone=buyer_phone,
+            buyer_address=buyer_address,
+            agreed_price=agreed_price,
+            token_amount=token_amount,
+            balance_amount=balance_amount,
+            stamp_duty=stamp_duty,
+            registration_fee=registration_fee,
+            total_estimated_cost=total_estimated_cost,
+            payment_method=payment_method,
+            transaction_id=transaction_id,
+            status='TOKEN_PAID',
+            agreement_document=agreement_text,
+            settlement_deadline=settlement_deadline,
+            buyer_signed_at=timezone.now(),
+        )
+
+        serializer = self.get_serializer(purchase)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.AllowAny])
+    def sign(self, request, pk=None):
+        purchase = self.get_object()
+        signer_role = request.data.get('role', 'BUYER').upper()
+        now = timezone.now()
+
+        if signer_role == 'SELLER':
+            purchase.seller_signed_at = now
+            if purchase.buyer_signed_at:
+                purchase.status = 'AGREEMENT_SIGNED'
+        else:
+            purchase.buyer_signed_at = now
+            if purchase.seller_signed_at:
+                purchase.status = 'AGREEMENT_SIGNED'
+
+        purchase.save()
+        serializer = self.get_serializer(purchase)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

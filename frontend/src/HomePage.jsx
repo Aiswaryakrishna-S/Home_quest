@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { propertyAPI, enquiryAPI } from './api';
+import { propertyAPI, enquiryAPI, getPropertyImageUrl, CATEGORY_SAMPLE_IMAGES } from './api';
 import LocationMap from './LocationMap';
 import MiniMapView from './MiniMapView';
+import AIExpressInterestModal from './AIExpressInterestModal';
+import PropertyImageModal from './PropertyImageModal';
+import PropertyBuyModal from './PropertyBuyModal';
 import './HomePage.css';
 
 const PROPERTY_TYPES = [
@@ -32,6 +35,9 @@ export default function HomePage({
 
   // Inquire modal state
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [aiInterestProperty, setAiInterestProperty] = useState(null);
+  const [galleryProperty, setGalleryProperty] = useState(null);
+  const [buyProperty, setBuyProperty] = useState(null);
   const [enquiryForm, setEnquiryForm] = useState({
     name: user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || '',
     email: user?.email || '',
@@ -513,19 +519,25 @@ export default function HomePage({
           <div className="hp-properties-grid">
             {filteredProperties.map((prop) => (
               <div key={prop.id} className="hp-property-card">
-                <div className="hp-prop-image-box">
+                <div
+                  className="hp-prop-image-box"
+                  onClick={() => setGalleryProperty(prop)}
+                  title="Click to view photo gallery & high-res image"
+                  style={{ cursor: 'pointer' }}
+                >
                   <img
-                    src={
-                      prop.image ||
-                      'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80'
-                    }
+                    src={getPropertyImageUrl(prop)}
                     alt={prop.title}
                     className="hp-prop-img"
+                    loading="lazy"
                   />
                   <span className="hp-prop-type-badge">{prop.property_type}</span>
                   <span className="hp-prop-price-tag">
-                    ${parseFloat(prop.price).toLocaleString()}
+                    {prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`}
                   </span>
+                  <div className="hp-image-gallery-badge">
+                    <span>📷 View Photos</span>
+                  </div>
                   {prop.distance_km && (
                     <span className="hp-distance-pill">
                       🚗 {prop.distance_km} km away
@@ -551,10 +563,25 @@ export default function HomePage({
 
                   <div className="hp-prop-footer">
                     <button
+                      className="hp-btn-buy"
+                      onClick={() => setBuyProperty(prop)}
+                      title="Buy Property & Generate Kerala Legal Agreement Deed"
+                    >
+                      💳 Buy Property
+                    </button>
+                    <button
+                      className="hp-btn-ai-interest"
+                      onClick={() => setAiInterestProperty(prop)}
+                      title="Express Interest & Send AI Inquiry to Owner"
+                    >
+                      ✨ Express Interest
+                    </button>
+                    <button
                       className="hp-btn-inquire"
                       onClick={() => handleOpenEnquiry(prop)}
+                      title="Direct message to owner"
                     >
-                      📩 Contact Owner
+                      📩 Contact
                     </button>
                   </div>
                 </div>
@@ -747,6 +774,40 @@ export default function HomePage({
             </form>
           </div>
         </div>
+      )}
+
+      {/* ── AI EXPRESS INTEREST & BUY MODAL ── */}
+      {aiInterestProperty && (
+        <AIExpressInterestModal
+          property={aiInterestProperty}
+          user={user}
+          onClose={() => setAiInterestProperty(null)}
+          onSuccess={() => {
+            // Success handled inside modal
+          }}
+        />
+      )}
+
+      {/* ── PROPERTY IMAGE GALLERY LIGHTBOX ── */}
+      {galleryProperty && (
+        <PropertyImageModal
+          property={galleryProperty}
+          onClose={() => setGalleryProperty(null)}
+          onExpressInterest={(p) => setAiInterestProperty(p)}
+          onBuyProperty={(p) => setBuyProperty(p)}
+        />
+      )}
+
+      {/* ── PROPERTY BUY & SALE DEED MODAL ── */}
+      {buyProperty && (
+        <PropertyBuyModal
+          property={buyProperty}
+          user={user}
+          onClose={() => setBuyProperty(null)}
+          onSuccess={(purchase) => {
+            console.log('Purchase agreement created:', purchase);
+          }}
+        />
       )}
     </div>
   );

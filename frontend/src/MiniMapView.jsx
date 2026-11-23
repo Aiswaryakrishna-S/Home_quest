@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getPropertyImageUrl } from './api';
 import './MiniMapView.css';
 
 // Fix Leaflet's default marker asset paths in Vite
@@ -147,11 +148,11 @@ export default function MiniMapView({
 
         const popupHtml = `
           <div class="mini-popup-box">
-            <img src="${prop.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=300&q=80'}" alt="${prop.title}" class="mini-popup-img" />
+            <img src="${getPropertyImageUrl(prop)}" alt="${prop.title}" class="mini-popup-img" />
             <div class="mini-popup-info">
               <span class="mini-popup-badge">${prop.property_type || 'HOMES'}</span>
               <strong class="mini-popup-title">${prop.title}</strong>
-              <span class="mini-popup-price">$${parseFloat(prop.price).toLocaleString()}</span>
+              <span class="mini-popup-price">${prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`}</span>
               ${prop.distance_km ? `<span class="mini-popup-dist">🚗 ${prop.distance_km} km away</span>` : ''}
               <button id="mini-inquire-${prop.id}" class="mini-popup-btn">Inquire</button>
             </div>

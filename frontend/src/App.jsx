@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authAPI } from './api';
 import HomePage from './HomePage';
 import OwnerDashboard from './OwnerDashboard';
+import ChatBotWidget from './ChatBotWidget';
 import './App.css';
 
 function App() {
@@ -230,12 +231,15 @@ function App() {
   // If activeTab is home, render the Public Home Page
   if (activeTab === 'home') {
     return (
-      <HomePage
-        user={user}
-        onNavigateAuth={(tab) => setActiveTab(tab)}
-        onNavigateDashboard={(tab) => setActiveTab(tab)}
-        onLogout={handleLogout}
-      />
+      <>
+        <HomePage
+          user={user}
+          onNavigateAuth={(tab) => setActiveTab(tab)}
+          onNavigateDashboard={(tab) => setActiveTab(tab)}
+          onLogout={handleLogout}
+        />
+        <ChatBotWidget user={user} />
+      </>
     );
   }
 
@@ -272,6 +276,7 @@ function App() {
           </div>
         </div>
         <OwnerDashboard user={user} onLogout={handleLogout} />
+        <ChatBotWidget user={user} />
       </div>
     );
   }
@@ -752,6 +757,7 @@ function App() {
           </section>
         )}
       </main>
+      <ChatBotWidget user={user} />
     </div>
   </div>
   );

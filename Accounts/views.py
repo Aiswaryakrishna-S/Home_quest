@@ -47,8 +47,16 @@ def send_password_reset_email(email, username, otp_code):
         f"If you did not request a password reset, please ignore this email or contact support immediately.\n\n"
         f"Best regards,\nHomeQuest AI Security Team"
     )
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', settings.EMAIL_HOST_USER)
-    send_mail(subject, message, from_email, [email], fail_silently=False)
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', 'noreply@homequest.com'))
+    try:
+        send_mail(subject, message, from_email, [email], fail_silently=False)
+    except Exception as e:
+        print(f"SMTP send warning: {e}")
+        print(f"==================================================")
+        print(f"[DEV DEBUG] PASSWORD RESET OTP FOR {email}: {otp_code}")
+        print(f"==================================================")
+        if not getattr(settings, 'DEBUG', False):
+            raise e
 
 
 # 1. Register APIView: Validates registration & sends 6-digit OTP (User not saved to User table yet)
@@ -227,7 +235,12 @@ class ForgotPasswordView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         email = serializer.validated_data['email']
-        user = User.objects.get(email__iexact=email)
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            return Response(
+                {"error": "No registered account found with this email address."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         otp_code = f"{random.randint(100000, 999999)}"
         PasswordResetOTP.create_or_update(email, otp_code)
@@ -278,9 +291,8 @@ class ResetPasswordView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            user = User.objects.get(email__iexact=email)
-        except User.DoesNotExist:
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
             return Response(
                 {"error": "No user account found for this email."},
                 status=status.HTTP_404_NOT_FOUND,

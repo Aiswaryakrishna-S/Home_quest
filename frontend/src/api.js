@@ -1,6 +1,62 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+export const API_BASE_URL = 'http://127.0.0.1:8000';
+
+// Curated high-resolution Kerala architecture sample photos by category
+export const CATEGORY_SAMPLE_IMAGES = {
+  BUILDING: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
+  APARTMENT: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
+  RENTAL: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80',
+  PLOT: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
+  REAL_ESTATE: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80',
+  DEFAULT: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1000&q=80',
+};
+
+// Preset gallery choices for sellers/owners to pick from
+export const PRESET_PROPERTY_IMAGES = [
+  { label: 'Kerala Luxury Villa', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80', type: 'BUILDING' },
+  { label: 'Modern Waterfront Home', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80', type: 'BUILDING' },
+  { label: 'High-Rise City Apartment', url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80', type: 'APARTMENT' },
+  { label: 'Modern Skyline Condo', url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1000&q=80', type: 'APARTMENT' },
+  { label: 'Green Residential Land', url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80', type: 'PLOT' },
+  { label: 'Furnished Rental Villa', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80', type: 'RENTAL' },
+  { label: 'Commercial Business Hub', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80', type: 'REAL_ESTATE' },
+];
+
+/**
+ * Resolves property image URL to an absolute working URL:
+ * Handles:
+ * - relative Django media path (e.g. /media/property_images/xxx.jpg)
+ * - absolute URLs
+ * - blob / data URLs from local file upload preview
+ * - category-specific fallback if image is missing
+ */
+export const getPropertyImageUrl = (propertyOrUrl, propertyType = null) => {
+  if (!propertyOrUrl) {
+    const type = (propertyType || '').toUpperCase();
+    return CATEGORY_SAMPLE_IMAGES[type] || CATEGORY_SAMPLE_IMAGES.DEFAULT;
+  }
+
+  let imgUrl = typeof propertyOrUrl === 'string' ? propertyOrUrl : propertyOrUrl.image;
+  const pType = (propertyType || propertyOrUrl.property_type || '').toUpperCase();
+
+  if (!imgUrl) {
+    return CATEGORY_SAMPLE_IMAGES[pType] || CATEGORY_SAMPLE_IMAGES.DEFAULT;
+  }
+
+  if (
+    imgUrl.startsWith('http://') ||
+    imgUrl.startsWith('https://') ||
+    imgUrl.startsWith('blob:') ||
+    imgUrl.startsWith('data:')
+  ) {
+    return imgUrl;
+  }
+
+  // Prepend backend URL for relative media paths
+  const cleanPath = imgUrl.startsWith('/') ? imgUrl : `/${imgUrl}`;
+  return `${API_BASE_URL}${cleanPath}`;
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -212,6 +268,52 @@ export const enquiryAPI = {
 
   createEnquiry: async (enquiryData) => {
     const response = await api.post('/api/properties/enquiries/', enquiryData);
+    return response.data;
+  },
+};
+
+// AI RAG Chatbot API helper methods
+export const chatbotAPI = {
+  sendMessage: async (message, history = []) => {
+    const response = await api.post('/api/chatbot/query/', { message, history });
+    return response.data;
+  },
+
+  getSuggestions: async () => {
+    const response = await api.get('/api/chatbot/suggestions/');
+    return response.data;
+  },
+
+  draftInquiry: async (payload) => {
+    const response = await api.post('/api/chatbot/draft_inquiry/', payload);
+    return response.data;
+  },
+
+  autoSendInquiry: async (payload) => {
+    const response = await api.post('/api/chatbot/auto_send_inquiry/', payload);
+    return response.data;
+  },
+};
+
+// Property Purchases & Sale Agreement API methods
+export const purchaseAPI = {
+  createPurchase: async (payload) => {
+    const response = await api.post('/api/properties/purchases/', payload);
+    return response.data;
+  },
+
+  getMyPurchases: async (params = {}) => {
+    const response = await api.get('/api/properties/purchases/', { params });
+    return response.data;
+  },
+
+  getPurchase: async (id) => {
+    const response = await api.get(`/api/properties/purchases/${id}/`);
+    return response.data;
+  },
+
+  signPurchase: async (id, role = 'BUYER') => {
+    const response = await api.post(`/api/properties/purchases/${id}/sign/`, { role });
     return response.data;
   },
 };

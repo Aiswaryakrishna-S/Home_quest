@@ -904,6 +904,19 @@
 .status-pill.status-contacted { background: #dbeafe; color: #1e40af; }
 .status-pill.status-resolved { background: #d1fae5; color: #065f46; }
 
+.ai-inquiry-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  border: 1px solid #c7d2fe;
+  color: #4338ca;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.35rem;
+  width: fit-content;
+}
+
 .btn-icon-delete {
   background: transparent;
   border: none;

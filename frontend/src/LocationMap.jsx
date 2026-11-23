@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { propertyAPI } from './api';
+import { propertyAPI, getPropertyImageUrl } from './api';
 import './LocationMap.css';
 
 // Fix Leaflet's default marker asset paths in Vite
@@ -116,11 +116,11 @@ export default function LocationMap({ properties = [], onSelectProperty, onLocat
         // Rich Popup Window
         const popupContent = `
           <div class="map-popup-card">
-            <img src="${prop.image || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=300&q=80'}" alt="${prop.title}" class="popup-thumb" />
+            <img src="${getPropertyImageUrl(prop)}" alt="${prop.title}" class="popup-thumb" />
             <div class="popup-body">
               <span class="popup-type">${prop.property_type || 'PROPERTY'}</span>
               <h4 class="popup-title">${prop.title}</h4>
-              <p class="popup-price">$${parseFloat(prop.price).toLocaleString()}</p>
+              <p class="popup-price">${prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`}</p>
               <p class="popup-loc">📍 ${prop.city || ''} &bull; ${prop.area_sqft || prop.area || ''} sqft</p>
               ${prop.distance_km ? `<p class="popup-dist">🚗 ${prop.distance_km} km from you</p>` : ''}
               <button id="popup-btn-${prop.id}" class="popup-inquire-btn">Contact Owner</button>

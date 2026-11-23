@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, Enquiry
+from .models import Property, Enquiry, PropertyPurchase
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -33,6 +33,19 @@ class PropertySerializer(serializers.ModelSerializer):
             'updated_at',
         ]
         read_only_fields = ['id', 'seller', 'seller_name', 'enquiry_count', 'distance_km', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        request = self.context.get('request')
+        if hasattr(instance, 'image') and instance.image:
+            if request:
+                try:
+                    ret['image'] = request.build_absolute_uri(instance.image.url)
+                except Exception:
+                    ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
+            else:
+                ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
+        return ret
 
     def get_seller_name(self, obj):
         if obj.seller:
@@ -105,7 +118,10 @@ class EnquirySerializer(serializers.ModelSerializer):
         if obj.property and obj.property.image:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.property.image.url)
+                try:
+                    return request.build_absolute_uri(obj.property.image.url)
+                except Exception:
+                    return obj.property.image.url
             return obj.property.image.url
         return None
 
@@ -120,3 +136,90 @@ class EnquirySerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user') and request.user.is_authenticated:
             validated_data['user'] = request.user
         return super().create(validated_data)
+
+
+class PropertyPurchaseSerializer(serializers.ModelSerializer):
+    property_title = serializers.ReadOnlyField(source='property.title')
+    property_city = serializers.ReadOnlyField(source='property.city')
+    property_type = serializers.ReadOnlyField(source='property.property_type')
+    property_image = serializers.SerializerMethodField()
+    seller_name = serializers.SerializerMethodField()
+    seller_email = serializers.ReadOnlyField(source='property.seller.email')
+    seller_phone = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PropertyPurchase
+        fields = [
+            'id',
+            'agreement_number',
+            'property',
+            'property_title',
+            'property_city',
+            'property_type',
+            'property_image',
+            'seller_name',
+            'seller_email',
+            'seller_phone',
+            'buyer',
+            'buyer_name',
+            'buyer_email',
+            'buyer_phone',
+            'buyer_address',
+            'agreed_price',
+            'token_amount',
+            'balance_amount',
+            'stamp_duty',
+            'registration_fee',
+            'total_estimated_cost',
+            'payment_method',
+            'transaction_id',
+            'status',
+            'agreement_document',
+            'settlement_deadline',
+            'buyer_signed_at',
+            'seller_signed_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'agreement_number',
+            'buyer',
+            'property_title',
+            'property_city',
+            'property_type',
+            'property_image',
+            'seller_name',
+            'seller_email',
+            'seller_phone',
+            'balance_amount',
+            'stamp_duty',
+            'registration_fee',
+            'total_estimated_cost',
+            'agreement_document',
+            'created_at',
+            'updated_at',
+        ]
+
+    def get_property_image(self, obj):
+        if obj.property and obj.property.image:
+            request = self.context.get('request')
+            if request:
+                try:
+                    return request.build_absolute_uri(obj.property.image.url)
+                except Exception:
+                    return f"http://127.0.0.1:8000{obj.property.image.url}"
+            return f"http://127.0.0.1:8000{obj.property.image.url}"
+        return None
+
+    def get_seller_name(self, obj):
+        if obj.property and obj.property.seller:
+            full = f"{obj.property.seller.first_name} {obj.property.seller.last_name}".strip()
+            return full if full else obj.property.seller.username
+        return "Property Owner"
+
+    def get_seller_phone(self, obj):
+        if obj.property and obj.property.seller:
+            return getattr(obj.property.seller, 'phone_number', None) or "+91 (Verified Seller)"
+        return "+91 (Verified Seller)"
+

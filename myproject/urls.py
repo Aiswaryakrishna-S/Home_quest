@@ -10,6 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('Accounts.urls')),
     path('api/properties/', include('Propertys.urls')),
+    path('api/chatbot/', include('Chatbot.urls')),
 ]
 
 if settings.DEBUG:
