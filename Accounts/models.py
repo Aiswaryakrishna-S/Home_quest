@@ -1,5 +1,6 @@
 import random
 from datetime import timedelta
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -88,3 +89,49 @@ class PasswordResetOTP(models.Model):
 
     def __str__(self):
         return f"Reset OTP: {self.email} - Code: {self.otp}"
+
+
+class PropertyViewHistory(models.Model):
+    """Tracks properties viewed by an authenticated user."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='viewed_properties'
+    )
+    property = models.ForeignKey(
+        'Propertys.Property',
+        on_delete=models.CASCADE,
+        related_name='views_history'
+    )
+    view_count = models.PositiveIntegerField(default=1)
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-viewed_at']
+        unique_together = ('user', 'property')
+
+    def __str__(self):
+        return f"{self.user.username} viewed {self.property.title} ({self.view_count} times)"
+
+
+class UserSearchHistory(models.Model):
+    """Tracks location & keyword searches performed by an authenticated user."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='search_history'
+    )
+    query = models.CharField(max_length=255)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    property_type = models.CharField(max_length=30, blank=True, default='ALL')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    results_count = models.PositiveIntegerField(default=0)
+    searched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-searched_at']
+
+    def __str__(self):
+        return f"{self.user.username} searched '{self.query}' in {self.city or 'Any'}"
+

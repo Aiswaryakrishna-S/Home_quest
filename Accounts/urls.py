@@ -10,6 +10,9 @@ from .views import (
     VerifyEmailView,
     ForgotPasswordView,
     ResetPasswordView,
+    RecordPropertyViewAPI,
+    RecordSearchHistoryAPI,
+    UserHistoryAPI,
 )
 
 urlpatterns = [
@@ -28,4 +31,9 @@ urlpatterns = [
 
     # Protected user profile
     path('profile/', ProfileView.as_view(), name='auth_profile'),
+
+    # Protected user browsing & search history (only for authenticated users)
+    path('history/', UserHistoryAPI.as_view(), name='user_history'),
+    path('history/view/', RecordPropertyViewAPI.as_view(), name='record_property_view'),
+    path('history/search/', RecordSearchHistoryAPI.as_view(), name='record_search_history'),
 ]

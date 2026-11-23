@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from .models import PropertyViewHistory, UserSearchHistory
 
 User = get_user_model()
 
@@ -76,3 +77,66 @@ class ResetPasswordSerializer(serializers.Serializer):
         if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
         return attrs
+
+
+class PropertyViewHistorySerializer(serializers.ModelSerializer):
+    property_id = serializers.IntegerField(source='property.id', read_only=True)
+    title = serializers.CharField(source='property.title', read_only=True)
+    price = serializers.DecimalField(source='property.price', max_digits=12, decimal_places=2, read_only=True)
+    formatted_price = serializers.SerializerMethodField()
+    city = serializers.CharField(source='property.city', read_only=True)
+    state = serializers.CharField(source='property.state', read_only=True)
+    property_type = serializers.CharField(source='property.property_type', read_only=True)
+    area_sqft = serializers.IntegerField(source='property.area_sqft', read_only=True)
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PropertyViewHistory
+        fields = [
+            'id',
+            'property_id',
+            'title',
+            'price',
+            'formatted_price',
+            'city',
+            'state',
+            'property_type',
+            'area_sqft',
+            'image',
+            'view_count',
+            'viewed_at',
+        ]
+
+    def get_formatted_price(self, obj):
+        try:
+            return f"₹{float(obj.property.price):,.0f}"
+        except Exception:
+            return f"₹{obj.property.price}"
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.property and obj.property.image:
+            url = obj.property.image.url
+            if request:
+                try:
+                    return request.build_absolute_uri(url)
+                except Exception:
+                    pass
+            return f"http://127.0.0.1:8000{url}"
+        return None
+
+
+class UserSearchHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSearchHistory
+        fields = [
+            'id',
+            'query',
+            'city',
+            'property_type',
+            'latitude',
+            'longitude',
+            'results_count',
+            'searched_at',
+        ]
+

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import PendingRegistration, PasswordResetOTP
+from .models import PendingRegistration, PasswordResetOTP, PropertyViewHistory, UserSearchHistory
 from .serializers import (
     RegisterSerializer,
     ResendOTPSerializer,
@@ -16,6 +16,8 @@ from .serializers import (
     VerifyEmailSerializer,
     ForgotPasswordSerializer,
     ResetPasswordSerializer,
+    PropertyViewHistorySerializer,
+    UserSearchHistorySerializer,
 )
 
 User = get_user_model()
@@ -311,3 +313,152 @@ class ResetPasswordView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class RecordPropertyViewAPI(APIView):
+    """
+    Records a property view for an authenticated user.
+    Only accessible after user login.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        property_id = request.data.get('property_id') or request.data.get('property')
+        if not property_id:
+            return Response(
+                {"error": "property_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from Propertys.models import Property
+        prop = Property.objects.filter(id=property_id).first()
+        if not prop:
+            return Response(
+                {"error": "Property not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Upsert view history (increments count if already viewed)
+        view_record, created = PropertyViewHistory.objects.get_or_create(
+            user=request.user,
+            property=prop,
+        )
+        if not created:
+            view_record.view_count += 1
+            view_record.save(update_fields=['view_count', 'viewed_at'])
+
+        return Response(
+            {
+                "status": "success",
+                "property_id": prop.id,
+                "view_count": view_record.view_count,
+                "viewed_at": view_record.viewed_at,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class RecordSearchHistoryAPI(APIView):
+    """
+    Records a location/keyword search performed by an authenticated user.
+    Only accessible after user login.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        query = request.data.get('query', '').strip()
+        city = request.data.get('city', '').strip()
+
+        # If both query and city are empty, skip recording
+        if not query and not city:
+            return Response(
+                {"error": "Search query or city is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        search_text = query or city
+        prop_type = request.data.get('property_type', 'ALL')
+        lat = request.data.get('latitude')
+        lng = request.data.get('longitude')
+        results_count = request.data.get('results_count', 0)
+
+        # Avoid spamming duplicate identical consecutive searches
+        latest_search = UserSearchHistory.objects.filter(user=request.user).first()
+        if latest_search and latest_search.query.lower() == search_text.lower() and latest_search.city == (city or None):
+            # Update results count and timestamp
+            latest_search.results_count = results_count
+            latest_search.save(update_fields=['results_count', 'searched_at'])
+            return Response({"status": "updated", "id": latest_search.id}, status=status.HTTP_200_OK)
+
+        record = UserSearchHistory.objects.create(
+            user=request.user,
+            query=search_text,
+            city=city or None,
+            property_type=prop_type or 'ALL',
+            latitude=lat if lat is not None else None,
+            longitude=lng if lng is not None else None,
+            results_count=results_count,
+        )
+
+        # Cap search history at 30 recent entries to keep DB lean
+        extra_ids = list(
+            UserSearchHistory.objects.filter(user=request.user)
+            .values_list('id', flat=True)[30:]
+        )
+        if extra_ids:
+            UserSearchHistory.objects.filter(id__in=extra_ids).delete()
+
+        return Response(
+            {"status": "recorded", "id": record.id},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class UserHistoryAPI(APIView):
+    """
+    Retrieves and manages the authenticated user's browsing and search history.
+    Strictly protected by JWT authentication.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch up to 12 recently viewed properties
+        views = (
+            PropertyViewHistory.objects.filter(user=request.user)
+            .select_related('property')[:12]
+        )
+        # Fetch up to 15 recent searches
+        searches = UserSearchHistory.objects.filter(user=request.user)[:15]
+
+        views_data = PropertyViewHistorySerializer(
+            views, many=True, context={'request': request}
+        ).data
+        searches_data = UserSearchHistorySerializer(searches, many=True).data
+
+        return Response(
+            {
+                "recent_properties": views_data,
+                "recent_searches": searches_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request):
+        """Allows user to clear all or specific history."""
+        target_type = request.data.get('type') or request.query_params.get('type')
+
+        if target_type == 'properties':
+            deleted_count, _ = PropertyViewHistory.objects.filter(user=request.user).delete()
+            return Response({"message": "Property view history cleared.", "count": deleted_count})
+        elif target_type == 'searches':
+            deleted_count, _ = UserSearchHistory.objects.filter(user=request.user).delete()
+            return Response({"message": "Search history cleared.", "count": deleted_count})
+        else:
+            p_count, _ = PropertyViewHistory.objects.filter(user=request.user).delete()
+            s_count, _ = UserSearchHistory.objects.filter(user=request.user).delete()
+            return Response({
+                "message": "All history cleared.",
+                "deleted_views": p_count,
+                "deleted_searches": s_count,
+            })
+

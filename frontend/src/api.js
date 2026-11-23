@@ -318,4 +318,47 @@ export const purchaseAPI = {
   },
 };
 
+// User History API (Active ONLY after user login)
+export const historyAPI = {
+  recordView: async (propertyId) => {
+    if (!authAPI.isAuthenticated()) return null;
+    try {
+      const response = await api.post('/api/auth/history/view/', { property_id: propertyId });
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  recordSearch: async ({ query, city, propertyType, lat, lng, resultsCount }) => {
+    if (!authAPI.isAuthenticated()) return null;
+    if (!query && !city) return null;
+    try {
+      const response = await api.post('/api/auth/history/search/', {
+        query: query || city,
+        city: city || null,
+        property_type: propertyType || 'ALL',
+        latitude: lat ?? null,
+        longitude: lng ?? null,
+        results_count: resultsCount || 0,
+      });
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  getHistory: async () => {
+    if (!authAPI.isAuthenticated()) return { recent_properties: [], recent_searches: [] };
+    const response = await api.get('/api/auth/history/');
+    return response.data;
+  },
+
+  clearHistory: async (type = 'all') => {
+    if (!authAPI.isAuthenticated()) return null;
+    const response = await api.delete('/api/auth/history/', { data: { type } });
+    return response.data;
+  },
+};
+
 export default api;

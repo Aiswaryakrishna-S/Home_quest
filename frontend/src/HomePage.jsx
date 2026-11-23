@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { propertyAPI, enquiryAPI, getPropertyImageUrl, CATEGORY_SAMPLE_IMAGES } from './api';
+import { propertyAPI, enquiryAPI, historyAPI, getPropertyImageUrl, CATEGORY_SAMPLE_IMAGES } from './api';
 import LocationMap from './LocationMap';
 import MiniMapView from './MiniMapView';
 import AIExpressInterestModal from './AIExpressInterestModal';
@@ -38,6 +38,11 @@ export default function HomePage({
   const [aiInterestProperty, setAiInterestProperty] = useState(null);
   const [galleryProperty, setGalleryProperty] = useState(null);
   const [buyProperty, setBuyProperty] = useState(null);
+
+  // Authenticated User History States (Only active after user login)
+  const [recentViews, setRecentViews] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
+
   const [enquiryForm, setEnquiryForm] = useState({
     name: user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || '',
     email: user?.email || '',
@@ -50,6 +55,94 @@ export default function HomePage({
   useEffect(() => {
     fetchProperties();
   }, []);
+
+  // Fetch browsing & search history strictly when user is authenticated
+  useEffect(() => {
+    if (user) {
+      historyAPI
+        .getHistory()
+        .then((data) => {
+          setRecentViews(data?.recent_properties || []);
+          setRecentSearches(data?.recent_searches || []);
+        })
+        .catch(() => {});
+    } else {
+      setRecentViews([]);
+      setRecentSearches([]);
+    }
+  }, [user]);
+
+  // Record viewed property helper (only when authenticated)
+  const handleRecordPropertyView = (prop) => {
+    if (!user || !prop?.id) return;
+    historyAPI.recordView(prop.id).then(() => {
+      setRecentViews((prev) => {
+        const filtered = prev.filter((p) => (p.property_id || p.id) !== prop.id);
+        const newItem = {
+          id: Date.now(),
+          property_id: prop.id,
+          title: prop.title,
+          price: prop.price,
+          formatted_price: prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`,
+          city: prop.city,
+          state: prop.state,
+          property_type: prop.property_type,
+          image: prop.image,
+          view_count: 1,
+          viewed_at: new Date().toISOString(),
+        };
+        return [newItem, ...filtered].slice(0, 10);
+      });
+    });
+  };
+
+  // Debounced search recording (only when authenticated)
+  useEffect(() => {
+    if (!user) return;
+    const term = (navSearch || heroCity).trim();
+    if (!term || term.length < 2) return;
+
+    const timer = setTimeout(() => {
+      const matchCount = properties.filter((p) => {
+        const t = term.toLowerCase();
+        return (
+          p.city?.toLowerCase().includes(t) ||
+          p.title?.toLowerCase().includes(t) ||
+          p.address?.toLowerCase().includes(t)
+        );
+      }).length;
+
+      historyAPI
+        .recordSearch({
+          query: term,
+          city: heroCity || undefined,
+          propertyType: heroType,
+          lat: userCoords?.lat,
+          lng: userCoords?.lng,
+          resultsCount: matchCount,
+        })
+        .then(() => {
+          setRecentSearches((prev) => {
+            const filtered = prev.filter(
+              (s) => s.query.toLowerCase() !== term.toLowerCase()
+            );
+            return [
+              {
+                id: Date.now(),
+                query: term,
+                city: heroCity || null,
+                property_type: heroType,
+                results_count: matchCount,
+                searched_at: new Date().toISOString(),
+              },
+              ...filtered,
+            ].slice(0, 8);
+          });
+        });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [navSearch, heroCity, heroType, user, userCoords]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -488,6 +581,98 @@ export default function HomePage({
           ))}
         </div>
 
+        {/* ── RECENT SEARCHES PILLS (Authenticated User History) ── */}
+        {user && recentSearches.length > 0 && (
+          <div className="hp-recent-searches-bar">
+            <span className="recent-search-label">🔍 Recent Searches:</span>
+            <div className="recent-search-chips">
+              {recentSearches.slice(0, 6).map((s) => (
+                <button
+                  key={s.id || s.query}
+                  className="recent-search-chip"
+                  onClick={() => {
+                    setNavSearch(s.query);
+                    if (s.city) setHeroCity(s.city);
+                    if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
+                  }}
+                  title={`Searched on ${new Date(s.searched_at).toLocaleDateString()}`}
+                >
+                  📍 {s.query} {s.results_count > 0 ? `(${s.results_count})` : ''}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="clear-history-chip"
+                onClick={async () => {
+                  await historyAPI.clearHistory('searches');
+                  setRecentSearches([]);
+                }}
+                title="Clear recent searches"
+              >
+                ✕ Clear
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── RECENTLY VIEWED BY YOU (Authenticated User History) ── */}
+        {user && recentViews.length > 0 && !navSearch && heroType === 'ALL' && (
+          <div className="hp-recently-viewed-section">
+            <div className="hp-recent-header">
+              <div className="hp-recent-title">
+                <span className="recent-icon">🕒</span>
+                <div>
+                  <h3>Recently Viewed by You</h3>
+                  <p className="recent-subtitle">Pick up right where you left off</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="hp-clear-views-btn"
+                onClick={async () => {
+                  await historyAPI.clearHistory('properties');
+                  setRecentViews([]);
+                }}
+              >
+                Clear History
+              </button>
+            </div>
+
+            <div className="hp-recent-views-row">
+              {recentViews.map((item) => (
+                <div
+                  key={item.id || item.property_id}
+                  className="hp-recent-mini-card"
+                  onClick={() => {
+                    const fullProp = properties.find((p) => p.id === (item.property_id || item.id)) || item;
+                    setGalleryProperty(fullProp);
+                    handleRecordPropertyView(fullProp);
+                  }}
+                >
+                  <div className="recent-mini-img-wrap">
+                    <img
+                      src={getPropertyImageUrl(item)}
+                      alt={item.title}
+                      className="recent-mini-img"
+                    />
+                    <span className="recent-type-badge">{item.property_type}</span>
+                    {item.view_count > 1 && (
+                      <span className="recent-count-badge">👁️ {item.view_count}x</span>
+                    )}
+                  </div>
+                  <div className="recent-mini-details">
+                    <h4 className="recent-mini-title">{item.title}</h4>
+                    <span className="recent-mini-price">
+                      {item.formatted_price || `₹${parseFloat(item.price).toLocaleString('en-IN')}`}
+                    </span>
+                    <span className="recent-mini-loc">📍 {item.city}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="hp-loading-box">
             <div className="hp-spinner"></div>
@@ -521,7 +706,10 @@ export default function HomePage({
               <div key={prop.id} className="hp-property-card">
                 <div
                   className="hp-prop-image-box"
-                  onClick={() => setGalleryProperty(prop)}
+                  onClick={() => {
+                    setGalleryProperty(prop);
+                    handleRecordPropertyView(prop);
+                  }}
                   title="Click to view photo gallery & high-res image"
                   style={{ cursor: 'pointer' }}
                 >
@@ -564,21 +752,30 @@ export default function HomePage({
                   <div className="hp-prop-footer">
                     <button
                       className="hp-btn-buy"
-                      onClick={() => setBuyProperty(prop)}
+                      onClick={() => {
+                        setBuyProperty(prop);
+                        handleRecordPropertyView(prop);
+                      }}
                       title="Buy Property & Generate Kerala Legal Agreement Deed"
                     >
                       💳 Buy Property
                     </button>
                     <button
                       className="hp-btn-ai-interest"
-                      onClick={() => setAiInterestProperty(prop)}
+                      onClick={() => {
+                        setAiInterestProperty(prop);
+                        handleRecordPropertyView(prop);
+                      }}
                       title="Express Interest & Send AI Inquiry to Owner"
                     >
                       ✨ Express Interest
                     </button>
                     <button
                       className="hp-btn-inquire"
-                      onClick={() => handleOpenEnquiry(prop)}
+                      onClick={() => {
+                        handleOpenEnquiry(prop);
+                        handleRecordPropertyView(prop);
+                      }}
                       title="Direct message to owner"
                     >
                       📩 Contact

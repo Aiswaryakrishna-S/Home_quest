@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authAPI } from './api';
+import { authAPI, historyAPI, getPropertyImageUrl } from './api';
 import HomePage from './HomePage';
 import OwnerDashboard from './OwnerDashboard';
 import ChatBotWidget from './ChatBotWidget';
@@ -47,12 +47,46 @@ function App() {
     address: '',
   });
 
+  // User History state (Protected, only after user login)
+  const [profileHistory, setProfileHistory] = useState({ recent_properties: [], recent_searches: [] });
+  const [historyTab, setHistoryTab] = useState('properties'); // 'properties' | 'searches'
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   // Check auth state on mount
   useEffect(() => {
     if (authAPI.isAuthenticated()) {
       fetchProfile();
     }
   }, []);
+
+  const fetchUserHistory = async () => {
+    if (!authAPI.isAuthenticated()) return;
+    setLoadingHistory(true);
+    try {
+      const data = await historyAPI.getHistory();
+      setProfileHistory(data || { recent_properties: [], recent_searches: [] });
+    } catch {
+      // ignore
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'profile' && user) {
+      fetchUserHistory();
+    }
+  }, [activeTab, user]);
+
+  const handleClearHistory = async (type) => {
+    try {
+      await historyAPI.clearHistory(type);
+      showAlert('success', 'History cleared successfully.');
+      fetchUserHistory();
+    } catch {
+      showAlert('error', 'Failed to clear history.');
+    }
+  };
 
   const showAlert = (type, message) => {
     setAlert({ type, message });
@@ -754,6 +788,154 @@ function App() {
                 {loading ? 'Saving...' : 'Save Profile Changes'}
               </button>
             </form>
+
+            <hr className="divider" style={{ margin: '2rem 0' }} />
+
+            {/* ── USER BROWSING & SEARCH HISTORY (ACTIVE ONLY AFTER LOGIN) ── */}
+            <div className="profile-history-card">
+              <div className="history-header">
+                <div>
+                  <h3>🕒 My Activity & History</h3>
+                  <p className="subtitle" style={{ margin: 0 }}>
+                    Track properties you viewed and locations you searched
+                  </p>
+                </div>
+                <div className="history-actions">
+                  <div className="history-tab-pills">
+                    <button
+                      type="button"
+                      className={`pill-btn ${historyTab === 'properties' ? 'active' : ''}`}
+                      onClick={() => setHistoryTab('properties')}
+                    >
+                      🏡 Viewed Properties ({profileHistory.recent_properties?.length || 0})
+                    </button>
+                    <button
+                      type="button"
+                      className={`pill-btn ${historyTab === 'searches' ? 'active' : ''}`}
+                      onClick={() => setHistoryTab('searches')}
+                    >
+                      🔍 Searches ({profileHistory.recent_searches?.length || 0})
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="clear-all-history-btn"
+                    onClick={() => handleClearHistory(historyTab)}
+                    title={`Clear all ${historyTab === 'properties' ? 'viewed properties' : 'search history'}`}
+                  >
+                    🗑️ Clear {historyTab === 'properties' ? 'Views' : 'Searches'}
+                  </button>
+                </div>
+              </div>
+
+              {loadingHistory ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem', color: '#64748b' }}>
+                  Loading history...
+                </div>
+              ) : historyTab === 'properties' ? (
+                profileHistory.recent_properties?.length === 0 ? (
+                  <div className="history-empty">
+                    <span>🏡</span>
+                    <p>No recently viewed properties yet.</p>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => setActiveTab('home')}
+                    >
+                      Explore Properties on Homepage
+                    </button>
+                  </div>
+                ) : (
+                  <div className="history-props-grid">
+                    {profileHistory.recent_properties.map((item) => (
+                      <div
+                        key={item.id}
+                        className="history-prop-item"
+                        onClick={() => setActiveTab('home')}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to view on Homepage"
+                      >
+                        <img
+                          src={getPropertyImageUrl(item)}
+                          alt={item.title}
+                          className="history-prop-thumb"
+                        />
+                        <div className="history-prop-info">
+                          <span className="history-prop-type">{item.property_type}</span>
+                          <h4 className="history-prop-title">{item.title}</h4>
+                          <span className="history-prop-price">
+                            {item.formatted_price || `₹${parseFloat(item.price).toLocaleString('en-IN')}`}
+                          </span>
+                          <span className="history-prop-loc">📍 {item.city}</span>
+                          <div className="history-prop-meta">
+                            <span>👁️ Viewed {item.view_count} {item.view_count === 1 ? 'time' : 'times'}</span>
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                              {new Date(item.viewed_at).toLocaleDateString([], {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                profileHistory.recent_searches?.length === 0 ? (
+                  <div className="history-empty">
+                    <span>🔍</span>
+                    <p>No recent searches yet.</p>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => setActiveTab('home')}
+                    >
+                      Search Homes on Homepage
+                    </button>
+                  </div>
+                ) : (
+                  <div className="history-searches-list">
+                    {profileHistory.recent_searches.map((s) => (
+                      <div key={s.id} className="history-search-row">
+                        <div className="search-row-left">
+                          <span className="search-icon-badge">📍</span>
+                          <div>
+                            <span className="search-query-text">{s.query}</span>
+                            <div className="search-meta-sub">
+                              {s.city && <span>City: {s.city}</span>}
+                              {s.property_type && s.property_type !== 'ALL' && (
+                                <span>Type: {s.property_type}</span>
+                              )}
+                              <span>Found {s.results_count || 0} listings</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="search-row-right">
+                          <span className="search-timestamp">
+                            {new Date(s.searched_at).toLocaleDateString([], {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          <button
+                            type="button"
+                            className="repeat-search-btn"
+                            onClick={() => setActiveTab('home')}
+                          >
+                            Explore
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </div>
           </section>
         )}
       </main>
