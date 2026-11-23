@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { propertyAPI, enquiryAPI, getPropertyImageUrl, PRESET_PROPERTY_IMAGES } from './api';
 import AIPriceAdvisor from './AIPriceAdvisor';
+import VisitScheduleManager from './VisitScheduleManager';
 import './OwnerDashboard.css';
 
 const PROPERTY_TYPES = [
@@ -317,6 +318,14 @@ export default function OwnerDashboard({ user, onLogout }) {
             {pendingEnquiries > 0 && (
               <span className="counter-pill pill-alert">{pendingEnquiries}</span>
             )}
+          </button>
+
+          <button
+            className={`od-nav-item ${activeSection === 'tours' ? 'active' : ''}`}
+            onClick={() => setActiveSection('tours')}
+          >
+            <span className="icon">📅</span>
+            <span>Visit Schedule</span>
           </button>
 
           <button
@@ -990,6 +999,16 @@ export default function OwnerDashboard({ user, onLogout }) {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* 5. TOURS & VISIT SCHEDULE SECTION */}
+          {activeSection === 'tours' && (
+            <div className="od-section od-tours-section">
+              <VisitScheduleManager
+                user={user}
+                onClose={() => setActiveSection('overview')}
+              />
             </div>
           )}
         </main>

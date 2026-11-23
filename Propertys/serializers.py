@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, Enquiry, PropertyPurchase
+from .models import Property, Enquiry, PropertyPurchase, PropertyTourSchedule
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -231,4 +231,101 @@ class PropertyPurchaseSerializer(serializers.ModelSerializer):
         if obj.property and obj.property.seller:
             return getattr(obj.property.seller, 'phone_number', None) or "+91 (Verified Seller)"
         return "+91 (Verified Seller)"
+
+
+class PropertyTourScheduleSerializer(serializers.ModelSerializer):
+    property_title = serializers.CharField(source='property.title', read_only=True)
+    property_city = serializers.CharField(source='property.city', read_only=True)
+    property_address = serializers.CharField(source='property.address', read_only=True)
+    property_price = serializers.DecimalField(source='property.price', max_digits=12, decimal_places=2, read_only=True)
+    property_type = serializers.CharField(source='property.property_type', read_only=True)
+    property_image = serializers.SerializerMethodField()
+    seller_name = serializers.SerializerMethodField()
+    seller_phone = serializers.SerializerMethodField()
+    seller_email = serializers.CharField(source='seller.email', read_only=True)
+    buyer_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PropertyTourSchedule
+        fields = [
+            'id',
+            'property',
+            'property_title',
+            'property_city',
+            'property_address',
+            'property_price',
+            'property_type',
+            'property_image',
+            'buyer',
+            'buyer_name',
+            'seller',
+            'seller_name',
+            'seller_phone',
+            'seller_email',
+            'visitor_name',
+            'visitor_phone',
+            'visitor_email',
+            'scheduled_date',
+            'time_slot',
+            'status',
+            'rescheduled_count',
+            'previous_date',
+            'previous_time_slot',
+            'reschedule_reason',
+            'buyer_notes',
+            'seller_notes',
+            'buyer_checklist',
+            'seller_checklist',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'buyer',
+            'seller',
+            'property_title',
+            'property_city',
+            'property_address',
+            'property_price',
+            'property_type',
+            'property_image',
+            'seller_name',
+            'seller_phone',
+            'seller_email',
+            'buyer_name',
+            'rescheduled_count',
+            'previous_date',
+            'previous_time_slot',
+            'created_at',
+            'updated_at',
+        ]
+
+    def get_property_image(self, obj):
+        if obj.property and obj.property.image:
+            request = self.context.get('request')
+            if request:
+                try:
+                    return request.build_absolute_uri(obj.property.image.url)
+                except Exception:
+                    return f"http://127.0.0.1:8000{obj.property.image.url}"
+            return f"http://127.0.0.1:8000{obj.property.image.url}"
+        return None
+
+    def get_seller_name(self, obj):
+        if obj.seller:
+            full = f"{obj.seller.first_name} {obj.seller.last_name}".strip()
+            return full if full else obj.seller.username
+        return "Host / Owner"
+
+    def get_seller_phone(self, obj):
+        if obj.seller:
+            return getattr(obj.seller, 'phone_number', None) or "+91 (Verified Host)"
+        return "+91 (Verified Host)"
+
+    def get_buyer_name(self, obj):
+        if obj.buyer:
+            full = f"{obj.buyer.first_name} {obj.buyer.last_name}".strip()
+            return full if full else obj.buyer.username
+        return obj.visitor_name
+
 

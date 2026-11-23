@@ -180,3 +180,110 @@ class PropertyPurchase(models.Model):
     def __str__(self):
         return f"Agreement {self.agreement_number} - {self.property.title} by {self.buyer_name} ({self.status})"
 
+
+# =====================================================================
+# PROPERTY TOUR & VISIT SCHEDULE MANAGEMENT
+# =====================================================================
+
+DEFAULT_BUYER_CHECKLIST = {
+    "government_id": {"label": "Government ID Proof (Aadhaar / Passport / Voter ID)", "checked": False},
+    "financing_readiness": {"label": "Bank Loan Pre-approval / Financing Documents", "checked": False},
+    "inspection_questions": {"label": "Structural & Title Inquiry Questions Prepared", "checked": False},
+    "measurement_tools": {"label": "Camera / Measuring Tools for Inspection", "checked": False},
+    "route_mapped": {"label": "GPS Route & Driving Directions Confirmed", "checked": False},
+}
+
+DEFAULT_SELLER_CHECKLIST = {
+    "keys_available": {"label": "Main Gate & Room Keys Available and Tested", "checked": False},
+    "premises_cleaned": {"label": "Property Cleaned & Rooms Well-Illuminated", "checked": False},
+    "utilities_functional": {"label": "Electricity, Water Supply & Plumbing Functional", "checked": False},
+    "title_copies_ready": {"label": "Title Deed, Tax Receipts & Approvals Ready for Inspection", "checked": False},
+    "tenant_notified": {"label": "Current Occupants / Security Notified in Advance", "checked": False},
+}
+
+
+class PropertyTourSchedule(models.Model):
+    """
+    Dedicated visit calendar for tracking upcoming, completed, and cancelled tours,
+    supporting one-click rescheduling and visit-readiness checklists.
+    """
+    class TourStatus(models.TextChoices):
+        UPCOMING = 'UPCOMING', 'Upcoming'
+        CONFIRMED = 'CONFIRMED', 'Confirmed'
+        RESCHEDULED = 'RESCHEDULED', 'Rescheduled'
+        COMPLETED = 'COMPLETED', 'Completed'
+        CANCELLED = 'CANCELLED', 'Cancelled'
+
+    TIME_SLOT_CHOICES = [
+        ('09:00 AM - 10:00 AM', 'Morning: 09:00 AM - 10:00 AM'),
+        ('10:00 AM - 11:00 AM', 'Morning: 10:00 AM - 11:00 AM'),
+        ('11:00 AM - 12:00 PM', 'Morning: 11:00 AM - 12:00 PM'),
+        ('02:00 PM - 03:00 PM', 'Afternoon: 02:00 PM - 03:00 PM'),
+        ('03:00 PM - 04:00 PM', 'Afternoon: 03:00 PM - 04:00 PM'),
+        ('04:00 PM - 05:00 PM', 'Evening: 04:00 PM - 05:00 PM'),
+        ('05:00 PM - 06:00 PM', 'Evening: 05:00 PM - 06:00 PM'),
+    ]
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='tour_schedules',
+        verbose_name="Property"
+    )
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='booked_tours',
+        verbose_name="Buyer"
+    )
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='hosted_tours',
+        verbose_name="Host / Seller"
+    )
+
+    # Visitor credentials
+    visitor_name = models.CharField(max_length=150, verbose_name="Visitor Name")
+    visitor_phone = models.CharField(max_length=25, verbose_name="Visitor Phone")
+    visitor_email = models.EmailField(verbose_name="Visitor Email")
+
+    # Tour scheduling details
+    scheduled_date = models.DateField(verbose_name="Scheduled Tour Date")
+    time_slot = models.CharField(max_length=50, choices=TIME_SLOT_CHOICES, default='10:00 AM - 11:00 AM')
+    status = models.CharField(max_length=20, choices=TourStatus.choices, default=TourStatus.UPCOMING)
+
+    # Rescheduling tracking (one-click rescheduling support)
+    rescheduled_count = models.PositiveIntegerField(default=0)
+    previous_date = models.DateField(null=True, blank=True)
+    previous_time_slot = models.CharField(max_length=50, blank=True, default='')
+    reschedule_reason = models.TextField(blank=True, default='')
+
+    # Notes & Special requests
+    buyer_notes = models.TextField(blank=True, default='')
+    seller_notes = models.TextField(blank=True, default='')
+
+    # Interactive Visit-Readiness Checklists
+    buyer_checklist = models.JSONField(default=dict, blank=True)
+    seller_checklist = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['scheduled_date', 'time_slot']
+        verbose_name = 'Property Tour Schedule'
+        verbose_name_plural = 'Property Tour Schedules'
+
+    def save(self, *args, **kwargs):
+        # Initialize default checklists if empty
+        if not self.buyer_checklist:
+            self.buyer_checklist = dict(DEFAULT_BUYER_CHECKLIST)
+        if not self.seller_checklist:
+            self.seller_checklist = dict(DEFAULT_SELLER_CHECKLIST)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Tour on {self.scheduled_date} ({self.time_slot}) for {self.property.title} - {self.status}"
+
+

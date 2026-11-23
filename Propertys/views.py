@@ -11,8 +11,8 @@ from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Property, Enquiry, PropertyPurchase
-from .serializers import PropertySerializer, EnquirySerializer, PropertyPurchaseSerializer
+from .models import Property, Enquiry, PropertyPurchase, PropertyTourSchedule
+from .serializers import PropertySerializer, EnquirySerializer, PropertyPurchaseSerializer, PropertyTourScheduleSerializer
 from .permissions import IsOwnerOrReadOnly
 from .ml_pricing import predict_and_analyze_property
 from .agreement_generator import generate_sale_agreement_text
@@ -540,4 +540,191 @@ class PropertyPurchaseViewSet(viewsets.ModelViewSet):
         purchase.save()
         serializer = self.get_serializer(purchase)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PropertyTourScheduleViewSet(viewsets.ModelViewSet):
+    """
+    Dedicated visit calendar for tracking upcoming, completed, and cancelled tours,
+    supporting one-click rescheduling and visit-readiness checklists.
+    """
+    serializer_class = PropertyTourScheduleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = PropertyTourSchedule.objects.all().select_related('property', 'buyer', 'seller')
+
+        role_filter = self.request.query_params.get('role', '').lower()
+        if role_filter == 'host' or role_filter == 'seller':
+            qs = qs.filter(seller=user)
+        elif role_filter == 'buyer' or role_filter == 'visitor':
+            qs = qs.filter(buyer=user)
+        else:
+            # Default: show tours where user is either buyer or host
+            qs = qs.filter(models.Q(buyer=user) | models.Q(seller=user))
+
+        # Status filter: UPCOMING, CONFIRMED, RESCHEDULED, COMPLETED, CANCELLED
+        status_param = self.request.query_params.get('status', '').upper()
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+
+        # Property filter
+        prop_id = self.request.query_params.get('property_id')
+        if prop_id:
+            qs = qs.filter(property_id=prop_id)
+
+        return qs.order_by('scheduled_date', 'time_slot')
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        property_id = data.get('property_id') or data.get('property')
+        if not property_id:
+            return Response(
+                {"error": "property_id is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        property_obj = Property.objects.filter(id=property_id).first()
+        if not property_obj:
+            return Response(
+                {"error": "Property not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        scheduled_date = data.get('scheduled_date')
+        if not scheduled_date:
+            return Response(
+                {"error": "scheduled_date is required (YYYY-MM-DD)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        time_slot = data.get('time_slot') or '10:00 AM - 11:00 AM'
+        visitor_name = data.get('visitor_name') or f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        visitor_phone = data.get('visitor_phone') or getattr(request.user, 'phone_number', '') or ''
+        visitor_email = data.get('visitor_email') or request.user.email
+        buyer_notes = data.get('buyer_notes', '')
+
+        tour = PropertyTourSchedule.objects.create(
+            property=property_obj,
+            buyer=request.user,
+            seller=property_obj.seller,
+            visitor_name=visitor_name,
+            visitor_phone=visitor_phone,
+            visitor_email=visitor_email,
+            scheduled_date=scheduled_date,
+            time_slot=time_slot,
+            status=PropertyTourSchedule.TourStatus.UPCOMING,
+            buyer_notes=buyer_notes,
+        )
+
+        serializer = self.get_serializer(tour)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def reschedule(self, request, pk=None):
+        """
+        One-click tour rescheduling:
+        Updates tour to new date & slot, saves previous appointment, and increments counter.
+        """
+        tour = self.get_object()
+        new_date = request.data.get('new_date') or request.data.get('scheduled_date')
+        new_slot = request.data.get('new_time_slot') or request.data.get('time_slot') or tour.time_slot
+        reason = request.data.get('reason') or request.data.get('reschedule_reason', '')
+
+        if not new_date:
+            return Response(
+                {"error": "new_date (YYYY-MM-DD) is required to reschedule."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Preserve previous schedule
+        tour.previous_date = tour.scheduled_date
+        tour.previous_time_slot = tour.time_slot
+        tour.scheduled_date = new_date
+        tour.time_slot = new_slot
+        tour.rescheduled_count += 1
+        tour.reschedule_reason = reason
+        tour.status = PropertyTourSchedule.TourStatus.RESCHEDULED
+        tour.save()
+
+        serializer = self.get_serializer(tour)
+        return Response({
+            "message": f"Tour rescheduled to {new_date} ({new_slot}) successfully.",
+            "tour": serializer.data,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """
+        Updates tour status: CONFIRMED, COMPLETED, CANCELLED.
+        """
+        tour = self.get_object()
+        new_status = request.data.get('status', '').upper()
+        notes = request.data.get('notes', '')
+
+        valid_statuses = [
+            PropertyTourSchedule.TourStatus.UPCOMING,
+            PropertyTourSchedule.TourStatus.CONFIRMED,
+            PropertyTourSchedule.TourStatus.COMPLETED,
+            PropertyTourSchedule.TourStatus.CANCELLED,
+        ]
+
+        if new_status not in valid_statuses:
+            return Response(
+                {"error": f"Invalid status. Must be one of: {[s.value for s in valid_statuses]}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        tour.status = new_status
+        if notes:
+            if request.user == tour.seller:
+                tour.seller_notes = notes
+            else:
+                tour.buyer_notes = notes
+
+        tour.save()
+        serializer = self.get_serializer(tour)
+        return Response({
+            "message": f"Tour status updated to {new_status}.",
+            "tour": serializer.data,
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['patch'])
+    def checklist(self, request, pk=None):
+        """
+        Updates an interactive visit-readiness checklist item:
+        Payload:
+        {
+            "role": "buyer" | "seller",
+            "item_key": "government_id",
+            "checked": true
+        }
+        """
+        tour = self.get_object()
+        role = request.data.get('role', 'buyer').lower()
+        item_key = request.data.get('item_key')
+        checked = bool(request.data.get('checked', False))
+
+        if not item_key:
+            return Response(
+                {"error": "item_key is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if role == 'seller' or request.user == tour.seller:
+            checklist_dict = dict(tour.seller_checklist)
+            if item_key in checklist_dict:
+                checklist_dict[item_key]['checked'] = checked
+                tour.seller_checklist = checklist_dict
+                tour.save(update_fields=['seller_checklist', 'updated_at'])
+        else:
+            checklist_dict = dict(tour.buyer_checklist)
+            if item_key in checklist_dict:
+                checklist_dict[item_key]['checked'] = checked
+                tour.buyer_checklist = checklist_dict
+                tour.save(update_fields=['buyer_checklist', 'updated_at'])
+
+        serializer = self.get_serializer(tour)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 

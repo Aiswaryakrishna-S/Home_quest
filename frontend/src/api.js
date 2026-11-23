@@ -369,4 +369,43 @@ export const historyAPI = {
   },
 };
 
+// Tour & Visit Schedule Management API
+export const tourAPI = {
+  createTour: async (payload) => {
+    const response = await api.post('/api/properties/tours/', payload);
+    return response.data;
+  },
+
+  getMyTours: async (params = {}) => {
+    const response = await api.get('/api/properties/tours/', { params });
+    return response.data;
+  },
+
+  rescheduleTour: async (id, { new_date, new_time_slot, reason }) => {
+    const response = await api.post(`/api/properties/tours/${id}/reschedule/`, {
+      new_date,
+      new_time_slot,
+      reason,
+    });
+    return response.data;
+  },
+
+  updateTourStatus: async (id, status, notes = '') => {
+    const response = await api.post(`/api/properties/tours/${id}/update_status/`, {
+      status,
+      notes,
+    });
+    return response.data;
+  },
+
+  updateChecklist: async (id, { role, item_key, checked }) => {
+    const response = await api.patch(`/api/properties/tours/${id}/checklist/`, {
+      role,
+      item_key,
+      checked,
+    });
+    return response.data;
+  },
+};
+
 export default api;

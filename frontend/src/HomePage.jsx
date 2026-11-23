@@ -5,6 +5,8 @@ import MiniMapView from './MiniMapView';
 import AIExpressInterestModal from './AIExpressInterestModal';
 import PropertyImageModal from './PropertyImageModal';
 import PropertyBuyModal from './PropertyBuyModal';
+import ScheduleVisitModal from './ScheduleVisitModal';
+import VisitScheduleManager from './VisitScheduleManager';
 import './HomePage.css';
 
 const PROPERTY_TYPES = [
@@ -38,6 +40,10 @@ export default function HomePage({
   const [aiInterestProperty, setAiInterestProperty] = useState(null);
   const [galleryProperty, setGalleryProperty] = useState(null);
   const [buyProperty, setBuyProperty] = useState(null);
+
+  // Visit Calendar & Tour Scheduling States
+  const [tourProperty, setTourProperty] = useState(null);
+  const [showVisitManager, setShowVisitManager] = useState(false);
 
   // Authenticated User History States (Only active after user login)
   const [recentViews, setRecentViews] = useState([]);
@@ -349,6 +355,13 @@ export default function HomePage({
 
             {user ? (
               <div className="hp-user-menu">
+                <button
+                  className="hp-nav-visits-btn"
+                  onClick={() => setShowVisitManager(true)}
+                  title="View your scheduled site visits & tours calendar"
+                >
+                  📅 My Tours
+                </button>
                 {user.role === 'SELLER' || user.role === 'ADMIN' ? (
                   <button
                     className="hp-btn-dashboard"
@@ -753,6 +766,16 @@ export default function HomePage({
 
                     <div className="hp-ai-rec-actions">
                       <button
+                        className="hp-btn-schedule-tour"
+                        onClick={() => {
+                          setTourProperty(rec);
+                          handleRecordPropertyView(rec);
+                        }}
+                        title="Schedule an In-Person Tour / Inspection"
+                      >
+                        📅 Tour
+                      </button>
+                      <button
                         className="hp-btn-buy"
                         onClick={() => {
                           setBuyProperty(rec);
@@ -864,6 +887,16 @@ export default function HomePage({
                       title="Buy Property & Generate Kerala Legal Agreement Deed"
                     >
                       💳 Buy Property
+                    </button>
+                    <button
+                      className="hp-btn-schedule-tour"
+                      onClick={() => {
+                        setTourProperty(prop);
+                        handleRecordPropertyView(prop);
+                      }}
+                      title="Schedule an In-Person Site Visit & Inspection"
+                    >
+                      📅 Schedule Tour
                     </button>
                     <button
                       className="hp-btn-ai-interest"
@@ -1108,6 +1141,31 @@ export default function HomePage({
           onClose={() => setBuyProperty(null)}
           onSuccess={(purchase) => {
             console.log('Purchase agreement created:', purchase);
+          }}
+        />
+      )}
+
+      {/* ── SCHEDULE SITE VISIT TOUR MODAL ── */}
+      {tourProperty && (
+        <ScheduleVisitModal
+          property={tourProperty}
+          user={user}
+          onClose={() => setTourProperty(null)}
+          onOpenScheduleManager={() => setShowVisitManager(true)}
+          onSuccess={(tour) => {
+            console.log('Tour booked successfully:', tour);
+          }}
+        />
+      )}
+
+      {/* ── DEDICATED VISIT CALENDAR & TOUR MANAGER MODAL ── */}
+      {showVisitManager && (
+        <VisitScheduleManager
+          user={user}
+          onClose={() => setShowVisitManager(false)}
+          onViewProperty={(p) => {
+            setShowVisitManager(false);
+            if (p) setGalleryProperty(p);
           }}
         />
       )}
