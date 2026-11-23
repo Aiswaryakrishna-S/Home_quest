@@ -247,6 +247,14 @@ export const propertyAPI = {
     const response = await api.post('/api/properties/predict_price/', payload);
     return response.data;
   },
+
+  // AI ML Personal Property Recommendations (Content-based vector profiling)
+  getRecommendations: async (limit = 6) => {
+    const response = await api.get('/api/properties/recommendations/', {
+      params: { limit },
+    });
+    return response.data;
+  },
 };
 
 // Enquiries API helper methods

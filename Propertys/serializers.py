@@ -45,6 +45,15 @@ class PropertySerializer(serializers.ModelSerializer):
                     ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
             else:
                 ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
+
+        # Attach ML Recommender metadata if present on instance
+        if hasattr(instance, 'match_score'):
+            ret['match_score'] = instance.match_score
+        if hasattr(instance, 'match_percentage'):
+            ret['match_percentage'] = instance.match_percentage
+        if hasattr(instance, 'ai_reason'):
+            ret['ai_reason'] = instance.ai_reason
+
         return ret
 
     def get_seller_name(self, obj):

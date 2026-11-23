@@ -43,6 +43,10 @@ export default function HomePage({
   const [recentViews, setRecentViews] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
 
+  // AI ML Property Recommendations
+  const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+
   const [enquiryForm, setEnquiryForm] = useState({
     name: user?.first_name ? `${user.first_name} ${user.last_name}` : user?.username || '',
     email: user?.email || '',
@@ -54,7 +58,20 @@ export default function HomePage({
 
   useEffect(() => {
     fetchProperties();
+    fetchRecommendations();
   }, []);
+
+  const fetchRecommendations = async () => {
+    setLoadingRecs(true);
+    try {
+      const res = await propertyAPI.getRecommendations(6);
+      setRecommendations(res?.recommendations || []);
+    } catch (err) {
+      console.warn('Could not load AI recommendations:', err);
+    } finally {
+      setLoadingRecs(false);
+    }
+  };
 
   // Fetch browsing & search history strictly when user is authenticated
   useEffect(() => {
@@ -66,9 +83,11 @@ export default function HomePage({
           setRecentSearches(data?.recent_searches || []);
         })
         .catch(() => {});
+      fetchRecommendations();
     } else {
       setRecentViews([]);
       setRecentSearches([]);
+      fetchRecommendations();
     }
   }, [user]);
 
@@ -76,6 +95,7 @@ export default function HomePage({
   const handleRecordPropertyView = (prop) => {
     if (!user || !prop?.id) return;
     historyAPI.recordView(prop.id).then(() => {
+      fetchRecommendations();
       setRecentViews((prev) => {
         const filtered = prev.filter((p) => (p.property_id || p.id) !== prop.id);
         const newItem = {
@@ -122,6 +142,7 @@ export default function HomePage({
           resultsCount: matchCount,
         })
         .then(() => {
+          fetchRecommendations();
           setRecentSearches((prev) => {
             const filtered = prev.filter(
               (s) => s.query.toLowerCase() !== term.toLowerCase()
@@ -666,6 +687,90 @@ export default function HomePage({
                       {item.formatted_price || `₹${parseFloat(item.price).toLocaleString('en-IN')}`}
                     </span>
                     <span className="recent-mini-loc">📍 {item.city}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── AUTOMATIC AI ML RECOMMENDATIONS SECTION (Personalized suggestions on page) ── */}
+        {recommendations && recommendations.length > 0 && !navSearch && (
+          <div className="hp-ai-recommendations-section">
+            <div className="hp-ai-rec-header">
+              <div className="hp-ai-rec-title">
+                <span className="hp-ai-sparkle-icon">✨</span>
+                <div>
+                  <div className="hp-ai-rec-badge">
+                    <span>🧠 AI SMART SUGGESTIONS</span>
+                    {user && <span className="hp-ai-personalized-tag">Personalized for {user.username}</span>}
+                  </div>
+                  <h3>Suggested For You Based on Your History</h3>
+                  <p className="hp-ai-rec-subtitle">
+                    Machine Learning analysis of your viewed listings and searched areas to find ideal matches.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="hp-ai-rec-grid">
+              {recommendations.map((rec) => (
+                <div key={rec.id} className="hp-ai-rec-card">
+                  <div
+                    className="hp-ai-rec-img-box"
+                    onClick={() => {
+                      setGalleryProperty(rec);
+                      handleRecordPropertyView(rec);
+                    }}
+                    title="Click to view photo gallery"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img
+                      src={getPropertyImageUrl(rec)}
+                      alt={rec.title}
+                      className="hp-ai-rec-img"
+                    />
+                    <div className="hp-ai-match-pill">
+                      <span>🎯 {rec.match_score || `${rec.match_percentage || 92}% Match`}</span>
+                    </div>
+                    <span className="hp-ai-type-tag">{rec.property_type}</span>
+                    <span className="hp-ai-price-tag">
+                      {rec.formatted_price || `₹${parseFloat(rec.price).toLocaleString('en-IN')}`}
+                    </span>
+                  </div>
+
+                  <div className="hp-ai-rec-body">
+                    <h4 className="hp-ai-rec-title-text">{rec.title}</h4>
+                    <p className="hp-ai-rec-loc">
+                      📍 {rec.city}{rec.state ? `, ${rec.state}` : ''} &bull; {rec.area_sqft || rec.area || '—'} sqft
+                    </p>
+
+                    {/* AI Explanation Callout */}
+                    <div className="hp-ai-reason-box">
+                      <span className="hp-ai-bulb">💡</span>
+                      <p className="hp-ai-reason-text">{rec.ai_reason || 'Strong algorithmic affinity with your recent preferences.'}</p>
+                    </div>
+
+                    <div className="hp-ai-rec-actions">
+                      <button
+                        className="hp-btn-buy"
+                        onClick={() => {
+                          setBuyProperty(rec);
+                          handleRecordPropertyView(rec);
+                        }}
+                      >
+                        💳 Buy Property
+                      </button>
+                      <button
+                        className="hp-btn-ai-interest"
+                        onClick={() => {
+                          setAiInterestProperty(rec);
+                          handleRecordPropertyView(rec);
+                        }}
+                      >
+                        ✨ Express Interest
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

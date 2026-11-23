@@ -262,6 +262,33 @@ class PropertyViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def recommendations(self, request):
+        """
+        AI ML Property Recommendations:
+        GET /api/properties/recommendations/
+        Automatically generates personalized suggestions based on the user's
+        PropertyViewHistory and UserSearchHistory using Scikit-Learn Content-Based Cosine Similarity.
+        """
+        from .recommender_engine import PropertyRecommendationEngine
+        user = request.user if (request.user and request.user.is_authenticated) else None
+        try:
+            limit = int(request.query_params.get('limit', 6))
+        except (ValueError, TypeError):
+            limit = 6
+
+        recommended_props = PropertyRecommendationEngine.get_recommendations_for_user(
+            user=user,
+            limit=limit,
+        )
+
+        serializer = self.get_serializer(recommended_props, many=True)
+        return Response({
+            "is_personalized": bool(user),
+            "count": len(recommended_props),
+            "recommendations": serializer.data,
+        })
+
     def perform_create(self, serializer):
         # Auto-fill coordinates from city if seller didn't provide lat/long
         validated_data = serializer.validated_data
