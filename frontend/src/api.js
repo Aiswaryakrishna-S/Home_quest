@@ -367,6 +367,18 @@ export const historyAPI = {
     const response = await api.delete('/api/auth/history/', { data: { type } });
     return response.data;
   },
+
+  deleteSearchItem: async (id) => {
+    if (!authAPI.isAuthenticated()) return null;
+    const response = await api.delete('/api/auth/history/', { data: { type: 'searches', id } });
+    return response.data;
+  },
+
+  deleteViewItem: async (id) => {
+    if (!authAPI.isAuthenticated()) return null;
+    const response = await api.delete('/api/auth/history/', { data: { type: 'properties', id } });
+    return response.data;
+  },
 };
 
 // Tour & Visit Schedule Management API

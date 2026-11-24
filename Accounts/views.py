@@ -444,8 +444,18 @@ class UserHistoryAPI(APIView):
         )
 
     def delete(self, request):
-        """Allows user to clear all or specific history."""
+        """Allows user to clear all, specific history type, or a single item."""
         target_type = request.data.get('type') or request.query_params.get('type')
+        item_id = request.data.get('id') or request.query_params.get('id')
+
+        # Single item deletion
+        if item_id:
+            if target_type == 'properties':
+                deleted, _ = PropertyViewHistory.objects.filter(user=request.user, id=item_id).delete()
+                return Response({"message": "Property view removed.", "count": deleted})
+            else:
+                deleted, _ = UserSearchHistory.objects.filter(user=request.user, id=item_id).delete()
+                return Response({"message": "Search history item removed.", "count": deleted})
 
         if target_type == 'properties':
             deleted_count, _ = PropertyViewHistory.objects.filter(user=request.user).delete()

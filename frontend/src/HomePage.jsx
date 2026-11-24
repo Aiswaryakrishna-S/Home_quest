@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { propertyAPI, enquiryAPI, historyAPI, getPropertyImageUrl, CATEGORY_SAMPLE_IMAGES } from './api';
 import LocationMap from './LocationMap';
 import MiniMapView from './MiniMapView';
@@ -7,6 +7,7 @@ import PropertyImageModal from './PropertyImageModal';
 import PropertyBuyModal from './PropertyBuyModal';
 import ScheduleVisitModal from './ScheduleVisitModal';
 import VisitScheduleManager from './VisitScheduleManager';
+import SearchHistoryModal from './SearchHistoryModal';
 import './HomePage.css';
 
 const PROPERTY_TYPES = [
@@ -48,6 +49,20 @@ export default function HomePage({
   // Authenticated User History States (Only active after user login)
   const [recentViews, setRecentViews] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const searchContainerRef = useRef(null);
+
+  // Close search history dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setSearchDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // AI ML Property Recommendations
   const [recommendations, setRecommendations] = useState([]);
@@ -317,14 +332,15 @@ export default function HomePage({
             </div>
           </div>
 
-          {/* Search bar inside Navbar */}
-          <div className="hp-nav-search">
+          {/* Search bar inside Navbar with Interactive History Dropdown */}
+          <div className="hp-nav-search" ref={searchContainerRef}>
             <span className="hp-search-icon">🔍</span>
             <input
               type="text"
               placeholder="Search by city, title, or address..."
               value={navSearch}
               onChange={(e) => setNavSearch(e.target.value)}
+              onFocus={() => setSearchDropdownOpen(true)}
             />
             {navSearch && (
               <button className="hp-clear-btn" onClick={() => setNavSearch('')}>
@@ -339,6 +355,103 @@ export default function HomePage({
             >
               {isLocating ? '⏳' : '📍 Near Me'}
             </button>
+
+            {/* Interactive Search History & Popular Dropdown */}
+            {searchDropdownOpen && (
+              <div className="hp-search-dropdown-menu">
+                {user && recentSearches.length > 0 && (
+                  <div className="dropdown-section">
+                    <div className="dropdown-section-header">
+                      <span>🕒 Recent Searches</span>
+                      <button
+                        type="button"
+                        className="dropdown-clear-link"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await historyAPI.clearHistory('searches');
+                          setRecentSearches([]);
+                        }}
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    <div className="dropdown-searches-list">
+                      {recentSearches.slice(0, 5).map((s) => (
+                        <div
+                          key={s.id || s.query}
+                          className="dropdown-search-item"
+                          onClick={() => {
+                            setNavSearch(s.query);
+                            if (s.city) setHeroCity(s.city);
+                            if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
+                            setSearchDropdownOpen(false);
+                          }}
+                        >
+                          <span className="item-icon">📍</span>
+                          <div className="item-info">
+                            <span className="item-query">{s.query}</span>
+                            {s.city && <span className="item-badge">{s.city}</span>}
+                          </div>
+                          <button
+                            type="button"
+                            className="item-delete-btn"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await historyAPI.deleteSearchItem(s.id);
+                              setRecentSearches((prev) => prev.filter((item) => item.id !== s.id));
+                            }}
+                            title="Remove from history"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="dropdown-section">
+                  <div className="dropdown-section-header">
+                    <span>🔥 Popular Searches</span>
+                  </div>
+                  <div className="dropdown-tags">
+                    {['Kochi', 'Palakkad', 'Trivandrum', 'Kozhikode', 'Apartment', 'Rental'].map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        className="dropdown-tag-btn"
+                        onClick={() => {
+                          if (['Apartment', 'Rental'].includes(tag)) {
+                            setHeroType(tag.toUpperCase());
+                          } else {
+                            setNavSearch(tag);
+                            setHeroCity(tag);
+                          }
+                          setSearchDropdownOpen(false);
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {user && (
+                  <div className="dropdown-footer">
+                    <button
+                      type="button"
+                      className="dropdown-history-modal-link"
+                      onClick={() => {
+                        setSearchDropdownOpen(false);
+                        setShowHistoryModal(true);
+                      }}
+                    >
+                      📜 View Full Activity & Search History →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Nav links & Auth buttons */}
@@ -361,6 +474,13 @@ export default function HomePage({
                   title="View your scheduled site visits & tours calendar"
                 >
                   📅 My Tours
+                </button>
+                <button
+                  className="hp-nav-history-btn"
+                  onClick={() => setShowHistoryModal(true)}
+                  title="View your search and viewing history"
+                >
+                  🕒 Search History
                 </button>
                 {user.role === 'SELLER' || user.role === 'ADMIN' ? (
                   <button
@@ -1167,6 +1287,22 @@ export default function HomePage({
             setShowVisitManager(false);
             if (p) setGalleryProperty(p);
           }}
+        />
+      )}
+
+      {/* ── SEARCH & ACTIVITY HISTORY MODAL ── */}
+      {showHistoryModal && (
+        <SearchHistoryModal
+          user={user}
+          onClose={() => setShowHistoryModal(false)}
+          onSelectSearch={(s) => {
+            setNavSearch(s.query || s.city || '');
+            if (s.city) setHeroCity(s.city);
+            if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
+            const el = document.getElementById('properties-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onSelectProperty={(prop) => handleOpenEnquiry(prop)}
         />
       )}
     </div>
