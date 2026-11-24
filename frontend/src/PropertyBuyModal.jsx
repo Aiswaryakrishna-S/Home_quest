@@ -74,7 +74,7 @@ export default function PropertyBuyModal({
             <span className="pbm-badge">📜 Legal Agreement & Escrow</span>
             <h2>Property Purchase & Sale Deed</h2>
             <p className="pbm-sub">
-              Secure your property, pay token advance, and generate an official Kerala Real Estate Agreement.
+              Secure your property and generate an official Kerala Real Estate Agreement.
             </p>
           </div>
           <button className="pbm-close-btn" onClick={onClose} aria-label="Close dialog">
@@ -88,7 +88,7 @@ export default function PropertyBuyModal({
             <div className="pbm-success-banner">
               <span className="pbm-check-icon">✅</span>
               <div>
-                <h4>Agreement Generated & Token Payment Confirmed!</h4>
+                <h4>Agreement Generated Successfully!</h4>
                 <p>Agreement Reference: <strong>{purchaseResult.agreement_number}</strong></p>
               </div>
               <button className="pbm-btn-print" onClick={handlePrintDocument}>
@@ -102,7 +102,7 @@ export default function PropertyBuyModal({
 
             <div className="pbm-agreement-footer">
               <div className="pbm-deed-status">
-                <span>Status: <strong className="status-badge">TOKEN PAID & VERIFIED</strong></span>
+                <span>Status: <strong className="status-badge">AGREEMENT GENERATED</strong></span>
                 <span>Registry Deadline: <strong>{purchaseResult.settlement_deadline}</strong></span>
               </div>
               <button className="pbm-btn-done" onClick={onClose}>
@@ -158,49 +158,13 @@ export default function PropertyBuyModal({
               </div>
             </div>
 
-            {/* Buyer Identification & Token Payment */}
+            {/* Buyer Identification */}
             <div className="pbm-box">
               <h4 className="pbm-box-title">👤 Purchasing Party (Auto-Identified)</h4>
               <div className="pbm-buyer-row">
                 <span>Name: <strong>{buyerName}</strong></span>
                 <span>Email: <strong>{buyerEmail}</strong></span>
                 <span>Phone: <strong>{buyerPhone}</strong></span>
-              </div>
-            </div>
-
-            {/* Token / Advance Payment Selection */}
-            <div className="pbm-box">
-              <h4 className="pbm-box-title">💳 Booking / Token Advance Option</h4>
-              <div className="pbm-token-pills">
-                {[
-                  { label: '₹50,000 (Standard Booking Token)', val: 50000 },
-                  { label: '₹1,00,000 (Priority Escrow Lock)', val: 100000 },
-                  { label: `₹${(basePrice * 0.1).toLocaleString('en-IN')} (10% Statutory Advance)`, val: basePrice * 0.1 },
-                ].map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`pbm-token-btn ${tokenAmount === item.val ? 'active' : ''}`}
-                    onClick={() => setTokenAmount(item.val)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="pbm-method-select">
-                <label>Payment Method:</label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="pbm-select"
-                >
-                  <option value="UPI">⚡ UPI (Google Pay, PhonePe, Paytm)</option>
-                  <option value="NET_BANKING">🏦 Net Banking / NEFT / RTGS</option>
-                  <option value="CARD">💳 Credit / Debit Card</option>
-                  <option value="DEMAND_DRAFT">📄 Demand Draft / Banker's Cheque</option>
-                  <option value="ESCROW">🛡️ HomeQuest Escrow Account</option>
-                </select>
               </div>
             </div>
 
@@ -215,7 +179,7 @@ export default function PropertyBuyModal({
                 onClick={handleInitiatePurchase}
                 disabled={submitting}
               >
-                {submitting ? '⏳ Generating Agreement Deed...' : `💳 Pay ₹${tokenAmount.toLocaleString('en-IN')} & Generate Agreement`}
+                {submitting ? '⏳ Generating Agreement Deed...' : '📜 Generate Legal Sale Agreement'}
               </button>
             </div>
           </div>
