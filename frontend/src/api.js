@@ -148,6 +148,13 @@ export const authAPI = {
       new_password,
       confirm_password,
     });
+    if (response.data?.tokens) {
+      localStorage.setItem('access_token', response.data.tokens.access);
+      localStorage.setItem('refresh_token', response.data.tokens.refresh);
+      if (response.data?.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+    }
     return response.data;
   },
 
@@ -237,6 +244,41 @@ export const propertyAPI = {
     return response.data;
   },
 
+  // Property Gallery Images with descriptions
+  getPropertyImages: async (propertyId) => {
+    const response = await api.get(`/api/properties/${propertyId}/images/`);
+    return response.data;
+  },
+
+  addPropertyImage: async (propertyId, imageFile, description = '') => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    if (description) {
+      formData.append('description', description);
+    }
+    const response = await api.post(`/api/properties/${propertyId}/images/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  addPropertyImagesBatch: async (propertyId, imageFilesWithDescriptions) => {
+    const formData = new FormData();
+    imageFilesWithDescriptions.forEach((item) => {
+      formData.append('gallery_images', item.file);
+      formData.append('gallery_descriptions', (item.description || '').trim());
+    });
+    const response = await api.post(`/api/properties/${propertyId}/images/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  deletePropertyImage: async (propertyId, imageId) => {
+    const response = await api.delete(`/api/properties/${propertyId}/images/${imageId}/`);
+    return response.data;
+  },
+
   getPropertyEnquiries: async (id) => {
     const response = await api.get(`/api/properties/${id}/enquiries/`);
     return response.data;
@@ -249,10 +291,20 @@ export const propertyAPI = {
   },
 
   // AI ML Personal Property Recommendations (Content-based vector profiling)
-  getRecommendations: async (limit = 6) => {
+  getRecommendations: async (limit = 6, likedIds = []) => {
+    const params = { limit };
+    if (likedIds && likedIds.length > 0) {
+      params.liked_ids = likedIds.join(',');
+    }
     const response = await api.get('/api/properties/recommendations/', {
-      params: { limit },
+      params,
     });
+    return response.data;
+  },
+
+  // Like / Unlike a property (persists to backend & powers AI personalization)
+  toggleLikeProperty: async (propertyId, action = null) => {
+    const response = await api.post(`/api/properties/${propertyId}/like/`, { action });
     return response.data;
   },
 };

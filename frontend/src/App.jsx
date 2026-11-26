@@ -3,6 +3,9 @@ import { authAPI, historyAPI, getPropertyImageUrl } from './api';
 import HomePage from './HomePage';
 import OwnerDashboard from './OwnerDashboard';
 import ChatBotWidget from './ChatBotWidget';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
+import ForgotPasswordModal from './ForgotPasswordModal';
 import './App.css';
 
 function App() {
@@ -221,11 +224,24 @@ function App() {
         new_password: resetData.new_password,
         confirm_password: resetData.confirm_password,
       });
-      showAlert('success', res.message || 'Password reset successfully! Please sign in.');
+
+      if (res.tokens?.access && res.user) {
+        showAlert('success', res.message || 'Password reset successfully! Welcome back.');
+        setUser(res.user);
+        const isSeller = res.user.role === 'SELLER' || res.user.role === 'ADMIN';
+        setActiveTab(isSeller ? 'owner-dashboard' : 'profile');
+      } else {
+        showAlert('success', res.message || 'Password reset successfully! Please sign in.');
+        setLoginData({
+          username: forgotEmail,
+          password: resetData.new_password,
+        });
+        setActiveTab('login');
+      }
+
       setForgotStep(1);
       setForgotEmail('');
       setResetData({ otp: '', new_password: '', confirm_password: '' });
-      setActiveTab('login');
     } catch (err) {
       const errMsg =
         err.response?.data?.error ||
@@ -262,8 +278,13 @@ function App() {
     showAlert('info', 'Logged out successfully.');
   };
 
-  // If activeTab is home, render the Public Home Page
-  if (activeTab === 'home') {
+  // If activeTab is home, login, register, or forgot-password, render Public HomePage with modal on top
+  if (
+    activeTab === 'home' ||
+    (activeTab === 'login' && !user) ||
+    (activeTab === 'register' && !user) ||
+    (activeTab === 'forgot-password' && !user)
+  ) {
     return (
       <>
         <HomePage
@@ -272,6 +293,60 @@ function App() {
           onNavigateDashboard={(tab) => setActiveTab(tab)}
           onLogout={handleLogout}
         />
+        {activeTab === 'login' && !user && (
+          <LoginModal
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            loginData={loginData}
+            setLoginData={setLoginData}
+            onSubmit={handleLoginSubmit}
+            loading={loading}
+            alert={alert}
+            onForgotPassword={() => {
+              setForgotStep(1);
+              setActiveTab('forgot-password');
+            }}
+            onRequestAccess={() => {
+              setRegStep(1);
+              setActiveTab('register');
+            }}
+          />
+        )}
+        {activeTab === 'forgot-password' && !user && (
+          <ForgotPasswordModal
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            forgotStep={forgotStep}
+            setForgotStep={setForgotStep}
+            forgotEmail={forgotEmail}
+            setForgotEmail={setForgotEmail}
+            resetData={resetData}
+            setResetData={setResetData}
+            onSubmitEmail={handleForgotPasswordSubmit}
+            onSubmitReset={handleResetPasswordSubmit}
+            loading={loading}
+            alert={alert}
+            onNavigateLogin={() => setActiveTab('login')}
+          />
+        )}
+        {activeTab === 'register' && !user && (
+          <RegisterModal
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            regStep={regStep}
+            setRegStep={setRegStep}
+            regData={regData}
+            setRegData={setRegData}
+            otp={otp}
+            setOtp={setOtp}
+            onSubmit={handleRegisterSubmit}
+            onVerifyOtp={handleVerifyOtp}
+            onResendOtp={handleResendOtp}
+            loading={loading}
+            alert={alert}
+            onNavigateLogin={() => setActiveTab('login')}
+          />
+        )}
         <ChatBotWidget user={user} />
       </>
     );
@@ -283,29 +358,29 @@ function App() {
       <div className="owner-app-container">
         <div className="top-quick-bar">
           <span className="quick-welcome">
-            👋 Welcome, <strong>{user.first_name || user.username}</strong> &bull; Role: <span className="badge role-badge">{user.role}</span>
+            Welcome, <strong>{user.first_name || user.username}</strong> &bull; Role: <span className="badge role-badge">{user.role}</span>
           </span>
           <div className="top-quick-links">
             <button
               className="quick-nav-btn"
               onClick={() => setActiveTab('home')}
             >
-              🏡 Home Page
+              Home Page
             </button>
             <button
               className="quick-nav-btn active"
               onClick={() => setActiveTab('owner-dashboard')}
             >
-              🏢 Owner Dashboard
+              Owner Dashboard
             </button>
             <button
               className="quick-nav-btn"
               onClick={() => setActiveTab('profile')}
             >
-              👤 Profile & Account
+              Profile & Account
             </button>
             <button className="quick-nav-btn btn-logout-quick" onClick={handleLogout}>
-              🚪 Sign Out
+              Sign Out
             </button>
           </div>
         </div>
@@ -367,14 +442,14 @@ function App() {
                 className="tab-btn"
                 onClick={() => setActiveTab('home')}
               >
-                🏡 Home
+                Home
               </button>
               {(user.role === 'SELLER' || user.role === 'ADMIN') && (
                 <button
                   className={`tab-btn ${activeTab === 'owner-dashboard' ? 'active' : ''}`}
                   onClick={() => setActiveTab('owner-dashboard')}
                 >
-                  🏢 Owner Dashboard
+                  Owner Dashboard
                 </button>
               )}
               <button
@@ -393,53 +468,23 @@ function App() {
       <main className="card">
         {/* LOGIN TAB */}
         {activeTab === 'login' && !user && (
-          <section>
-            <h2>User Login</h2>
-            <p className="subtitle">Sign in to your account with JWT</p>
-            <form onSubmit={handleLoginSubmit}>
-              <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Enter your username"
-                  value={loginData.username}
-                  onChange={(e) =>
-                    setLoginData({ ...loginData, username: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="form-group">
-                <div className="label-with-action">
-                  <label>Password</label>
-                  <button
-                    type="button"
-                    className="forgot-link-btn"
-                    onClick={() => {
-                      setForgotStep(1);
-                      setActiveTab('forgot-password');
-                    }}
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter your password"
-                  value={loginData.password}
-                  onChange={(e) =>
-                    setLoginData({ ...loginData, password: e.target.value })
-                  }
-                />
-              </div>
-
-              <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? 'Logging in...' : 'Sign In'}
-              </button>
-            </form>
-          </section>
+          <LoginModal
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            loginData={loginData}
+            setLoginData={setLoginData}
+            onSubmit={handleLoginSubmit}
+            loading={loading}
+            alert={alert}
+            onForgotPassword={() => {
+              setForgotStep(1);
+              setActiveTab('forgot-password');
+            }}
+            onRequestAccess={() => {
+              setRegStep(1);
+              setActiveTab('register');
+            }}
+          />
         )}
 
         {/* FORGOT PASSWORD TAB */}
@@ -556,156 +601,22 @@ function App() {
 
         {/* REGISTER TAB */}
         {activeTab === 'register' && !user && (
-          <section>
-            {regStep === 1 ? (
-              <>
-                <h2>Create Account</h2>
-                <p className="subtitle">
-                  Step 1: Fill in your details. We will email a 6-digit OTP.
-                </p>
-                <form onSubmit={handleRegisterSubmit}>
-                  <div className="grid-2">
-                    <div className="form-group">
-                      <label>Username</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="johndoe"
-                        value={regData.username}
-                        onChange={(e) =>
-                          setRegData({ ...regData, username: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Email Address</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="john@example.com"
-                        value={regData.email}
-                        onChange={(e) =>
-                          setRegData({ ...regData, email: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Password</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Minimum 8 characters"
-                      value={regData.password}
-                      onChange={(e) =>
-                        setRegData({ ...regData, password: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div className="grid-2">
-                    <div className="form-group">
-                      <label>First Name</label>
-                      <input
-                        type="text"
-                        placeholder="John"
-                        value={regData.first_name}
-                        onChange={(e) =>
-                          setRegData({ ...regData, first_name: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Last Name</label>
-                      <input
-                        type="text"
-                        placeholder="Doe"
-                        value={regData.last_name}
-                        onChange={(e) =>
-                          setRegData({ ...regData, last_name: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid-2">
-                    <div className="form-group">
-                      <label>Phone Number</label>
-                      <input
-                        type="tel"
-                        placeholder="+1234567890"
-                        value={regData.phone_number}
-                        onChange={(e) =>
-                          setRegData({ ...regData, phone_number: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Role</label>
-                      <select
-                        value={regData.role}
-                        onChange={(e) =>
-                          setRegData({ ...regData, role: e.target.value })
-                        }
-                      >
-                        <option value="BUYER">BUYER</option>
-                        <option value="SELLER">SELLER</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button type="submit" className="submit-btn" disabled={loading}>
-                    {loading ? 'Sending Verification Code...' : 'Send OTP to Email'}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2>Verify 6-Digit OTP</h2>
-                <p className="subtitle">
-                  Step 2: Enter the 6-digit verification code sent to{' '}
-                  <strong>{regData.email}</strong>
-                </p>
-                <form onSubmit={handleVerifyOtp}>
-                  <div className="form-group">
-                    <label>6-Digit Verification Code</label>
-                    <input
-                      type="text"
-                      maxLength="6"
-                      required
-                      placeholder="123456"
-                      className="otp-input"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                    />
-                  </div>
-
-                  <button type="submit" className="submit-btn" disabled={loading}>
-                    {loading ? 'Verifying...' : 'Verify OTP & Complete Registration'}
-                  </button>
-
-                  <div className="otp-actions">
-                    <button
-                      type="button"
-                      className="secondary-btn"
-                      onClick={handleResendOtp}
-                      disabled={loading}
-                    >
-                      Resend Code
-                    </button>
-                    <button
-                      type="button"
-                      className="link-btn"
-                      onClick={() => setRegStep(1)}
-                    >
-                      Back to edit details
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-          </section>
+          <RegisterModal
+            isOpen={true}
+            onClose={() => setActiveTab('home')}
+            regStep={regStep}
+            setRegStep={setRegStep}
+            regData={regData}
+            setRegData={setRegData}
+            otp={otp}
+            setOtp={setOtp}
+            onSubmit={handleRegisterSubmit}
+            onVerifyOtp={handleVerifyOtp}
+            onResendOtp={handleResendOtp}
+            loading={loading}
+            alert={alert}
+            onNavigateLogin={() => setActiveTab('login')}
+          />
         )}
 
         {/* PROFILE TAB (PROTECTED) */}
@@ -795,7 +706,7 @@ function App() {
             <div className="profile-history-card">
               <div className="history-header">
                 <div>
-                  <h3>🕒 My Activity & History</h3>
+                  <h3>My Activity & History</h3>
                   <p className="subtitle" style={{ margin: 0 }}>
                     Track properties you viewed and locations you searched
                   </p>
@@ -807,14 +718,14 @@ function App() {
                       className={`pill-btn ${historyTab === 'properties' ? 'active' : ''}`}
                       onClick={() => setHistoryTab('properties')}
                     >
-                      🏡 Viewed Properties ({profileHistory.recent_properties?.length || 0})
+                      Viewed Properties ({profileHistory.recent_properties?.length || 0})
                     </button>
                     <button
                       type="button"
                       className={`pill-btn ${historyTab === 'searches' ? 'active' : ''}`}
                       onClick={() => setHistoryTab('searches')}
                     >
-                      🔍 Searches ({profileHistory.recent_searches?.length || 0})
+                      Searches ({profileHistory.recent_searches?.length || 0})
                     </button>
                   </div>
                   <button
@@ -823,7 +734,7 @@ function App() {
                     onClick={() => handleClearHistory(historyTab)}
                     title={`Clear all ${historyTab === 'properties' ? 'viewed properties' : 'search history'}`}
                   >
-                    🗑️ Clear {historyTab === 'properties' ? 'Views' : 'Searches'}
+                    Clear {historyTab === 'properties' ? 'Views' : 'Searches'}
                   </button>
                 </div>
               </div>
@@ -835,7 +746,7 @@ function App() {
               ) : historyTab === 'properties' ? (
                 profileHistory.recent_properties?.length === 0 ? (
                   <div className="history-empty">
-                    <span>🏡</span>
+                    <span>[ ]</span>
                     <p>No recently viewed properties yet.</p>
                     <button
                       type="button"
@@ -866,9 +777,9 @@ function App() {
                           <span className="history-prop-price">
                             {item.formatted_price || `₹${parseFloat(item.price).toLocaleString('en-IN')}`}
                           </span>
-                          <span className="history-prop-loc">📍 {item.city}</span>
+                          <span className="history-prop-loc">{item.city}</span>
                           <div className="history-prop-meta">
-                            <span>👁️ Viewed {item.view_count} {item.view_count === 1 ? 'time' : 'times'}</span>
+                            <span>Viewed {item.view_count} {item.view_count === 1 ? 'time' : 'times'}</span>
                             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                               {new Date(item.viewed_at).toLocaleDateString([], {
                                 month: 'short',
@@ -886,7 +797,7 @@ function App() {
               ) : (
                 profileHistory.recent_searches?.length === 0 ? (
                   <div className="history-empty">
-                    <span>🔍</span>
+                    <span>[ ]</span>
                     <p>No recent searches yet.</p>
                     <button
                       type="button"
@@ -901,7 +812,7 @@ function App() {
                     {profileHistory.recent_searches.map((s) => (
                       <div key={s.id} className="history-search-row">
                         <div className="search-row-left">
-                          <span className="search-icon-badge">📍</span>
+                          <span className="search-icon-badge">[S]</span>
                           <div>
                             <span className="search-query-text">{s.query}</span>
                             <div className="search-meta-sub">

@@ -33,8 +33,16 @@ def send_verification_email(email, username, otp_code):
         f"This code will expire in 10 minutes.\n\n"
         f"If you did not make this request, please ignore this email."
     )
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', settings.EMAIL_HOST_USER)
-    send_mail(subject, message, from_email, [email], fail_silently=False)
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', getattr(settings, 'EMAIL_HOST_USER', 'noreply@homequest.com'))
+    print(f"==================================================")
+    print(f"[DEV DEBUG] REGISTRATION VERIFICATION OTP FOR {email}: {otp_code}")
+    print(f"==================================================")
+    try:
+        send_mail(subject, message, from_email, [email], fail_silently=False)
+    except Exception as e:
+        print(f"SMTP send warning for registration: {e}")
+        if not getattr(settings, 'DEBUG', False):
+            raise e
 
 
 def send_password_reset_email(email, username, otp_code):
@@ -236,7 +244,7 @@ class ForgotPasswordView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        email = serializer.validated_data['email']
+        email = serializer.validated_data['email'].strip().lower()
         user = User.objects.filter(email__iexact=email).first()
         if not user:
             return Response(
@@ -273,8 +281,8 @@ class ResetPasswordView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        email = serializer.validated_data['email']
-        otp_code = serializer.validated_data['otp']
+        email = serializer.validated_data['email'].strip().lower()
+        otp_code = serializer.validated_data['otp'].strip()
         new_password = serializer.validated_data['new_password']
 
         # Validate OTP
@@ -300,16 +308,26 @@ class ResetPasswordView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Update password
+        # Update password, ensure user is active and email verified
         user.set_password(new_password)
+        user.is_active = True
+        user.is_verified = True
         user.save()
 
-        # Invalidate OTP
+        # Invalidate OTP record
         reset_record.delete()
+
+        # Generate JWT tokens so user can be instantly authenticated
+        refresh = RefreshToken.for_user(user)
 
         return Response(
             {
                 "message": "Password reset successfully! You can now log in with your new password.",
+                "tokens": {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                "user": UserSerializer(user).data,
             },
             status=status.HTTP_200_OK,
         )

@@ -1,0 +1,156 @@
+// Kerala District & Micro-market benchmarks for HomeQuest AI
+export const KERALA_LOCATIONS = [
+  {
+    id: 'kannur',
+    name: 'Kannur',
+    district: 'Kannur',
+    lat: 11.8745,
+    lng: 75.3704,
+    tag: 'North Kerala • NH 66',
+    tier: 'Tier-2',
+    isPopular: true,
+  },
+  {
+    id: 'kochi',
+    name: 'Kochi (Ernakulam)',
+    district: 'Ernakulam',
+    lat: 9.9816,
+    lng: 76.2999,
+    tag: 'Commercial Hub • Infopark',
+    tier: 'Tier-1',
+    isPopular: true,
+  },
+  {
+    id: 'kozhikode',
+    name: 'Kozhikode (Calicut)',
+    district: 'Kozhikode',
+    lat: 11.2588,
+    lng: 75.7804,
+    tag: 'Malabar Hub • Cyberpark',
+    tier: 'Tier-1',
+    isPopular: true,
+  },
+  {
+    id: 'thiruvananthapuram',
+    name: 'Thiruvananthapuram',
+    district: 'Thiruvananthapuram',
+    lat: 8.5241,
+    lng: 76.9366,
+    tag: 'State Capital • Technopark',
+    tier: 'Tier-1',
+    isPopular: true,
+  },
+  {
+    id: 'thrissur',
+    name: 'Thrissur',
+    district: 'Thrissur',
+    lat: 10.5276,
+    lng: 76.2144,
+    tag: 'Cultural Capital • NH 544',
+    tier: 'Tier-2',
+    isPopular: true,
+  },
+  {
+    id: 'kottayam',
+    name: 'Kottayam',
+    district: 'Kottayam',
+    lat: 9.5916,
+    lng: 76.5222,
+    tag: 'Central Travancore • MC Road',
+    tier: 'Tier-2',
+    isPopular: true,
+  },
+  {
+    id: 'palakkad',
+    name: 'Palakkad',
+    district: 'Palakkad',
+    lat: 10.7867,
+    lng: 76.6548,
+    tag: 'Gateway Corridor • NH 544',
+    tier: 'Tier-2',
+    isPopular: false,
+  },
+  {
+    id: 'alappuzha',
+    name: 'Alappuzha',
+    district: 'Alappuzha',
+    lat: 9.4981,
+    lng: 76.3388,
+    tag: 'Coastal & Waterfront Zone',
+    tier: 'Tier-2',
+    isPopular: false,
+  },
+  {
+    id: 'kollam',
+    name: 'Kollam',
+    district: 'Kollam',
+    lat: 8.8932,
+    lng: 76.6141,
+    tag: 'Port City • NH 66 Bypass',
+    tier: 'Tier-2',
+    isPopular: false,
+  },
+  {
+    id: 'malappuram',
+    name: 'Malappuram',
+    district: 'Malappuram',
+    lat: 11.0510,
+    lng: 76.0711,
+    tag: 'Airport Zone',
+    tier: 'Tier-2',
+    isPopular: false,
+  },
+  {
+    id: 'wayanad',
+    name: 'Wayanad',
+    district: 'Wayanad',
+    lat: 11.6103,
+    lng: 76.0827,
+    tag: 'Highland Tourism Zone',
+    tier: 'Tier-3',
+    isPopular: false,
+  },
+  {
+    id: 'kasaragod',
+    name: 'Kasaragod',
+    district: 'Kasaragod',
+    lat: 12.4996,
+    lng: 74.9869,
+    tag: 'North Coastal Border',
+    tier: 'Tier-3',
+    isPopular: false,
+  },
+  {
+    id: 'pathanamthitta',
+    name: 'Pathanamthitta',
+    district: 'Pathanamthitta',
+    lat: 9.2648,
+    lng: 76.7870,
+    tag: 'Pilgrim Hub',
+    tier: 'Tier-3',
+    isPopular: false,
+  },
+  {
+    id: 'idukki',
+    name: 'Idukki',
+    district: 'Idukki',
+    lat: 9.8959,
+    lng: 76.7184,
+    tag: 'Hill Station / Plantation',
+    tier: 'Tier-3',
+    isPopular: false,
+  },
+];
+
+export const findKeralaLocation = (query) => {
+  if (!query) return null;
+  const q = query.trim().toLowerCase();
+  return (
+    KERALA_LOCATIONS.find(
+      (loc) =>
+        loc.id === q ||
+        loc.name.toLowerCase().includes(q) ||
+        loc.district.toLowerCase().includes(q)
+    ) || null
+  );
+};

@@ -39,7 +39,7 @@ SECRET_KEY = 'django-insecure-@aod=i)hdb=mw=zrs#mtdn*+!h77wio+x^+7&5u+^jkj8=p8e*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost', 'testserver']
 
 
 # Application definition
@@ -102,9 +102,18 @@ DATABASES = {
         "USER": "homequest_user",
         "PASSWORD": "homequest123",
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "2222",
     }
 }
+
+import sys
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -150,6 +159,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 from datetime import timedelta
+
+AUTHENTICATION_BACKENDS = [
+    'Accounts.backends.EmailOrUsernameBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

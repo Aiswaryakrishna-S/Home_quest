@@ -1,0 +1,157 @@
+/* =====================================================================
+   PURE WHITE SCROLL-DRIVEN 3D ARCHITECTURAL VILLA LANDING SECTION
+   ===================================================================== */
+
+.sv3d-scroll-runway {
+  position: relative;
+  width: 100%;
+  height: 320vh;
+  background: #ffffff;
+  z-index: 2;
+}
+
+.sv3d-sticky-stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.sv3d-canvas-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+}
+
+.sv3d-canvas-host canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Centered Pure-White Opening Project Name (Dissolves Smoothly on Scroll) */
+.sv3d-brand-splash {
+  position: relative;
+  z-index: 6;
+  padding: 0 2rem;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity, filter;
+}
+
+.sv3d-brand-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: sv3dBrandReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes sv3dBrandReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.sv3d-brand-eyebrow {
+  font-family: var(--hq-font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #9d8f8c;
+  margin-bottom: 1.1rem;
+}
+
+.sv3d-brand-wordmark {
+  margin: 0;
+  font-family: var(--hq-font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(3.1rem, 8.2vw, 6.6rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: #1c1417;
+}
+
+.sv3d-brand-wordmark em {
+  font-style: italic;
+  font-weight: 600;
+  color: #581825;
+}
+
+.sv3d-brand-rule {
+  width: 56px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #c29b63, transparent);
+  margin: 1.45rem 0 1.25rem;
+}
+
+.sv3d-brand-tagline {
+  margin: 0;
+  font-family: var(--hq-font-sans, 'Plus Jakarta Sans', sans-serif);
+  font-size: clamp(0.92rem, 1.4vw, 1.12rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #746764;
+}
+
+/* Ultra-minimal bottom progress bar & whisper scroll hint */
+.sv3d-minimal-footer {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.sv3d-minimal-footer.done {
+  opacity: 0;
+}
+
+.sv3d-thin-track {
+  width: 120px;
+  height: 2px;
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.sv3d-thin-fill {
+  height: 100%;
+  background: #1f242c;
+  border-radius: 9999px;
+  transition: width 0.12s ease-out;
+}
+
+.sv3d-whisper-hint {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(31, 36, 44, 0.55);
+  animation: sv3dGentlePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes sv3dGentlePulse {
+  0%, 100% { opacity: 0.45; transform: translateY(0); }
+  50% { opacity: 0.9; transform: translateY(3px); }
+}

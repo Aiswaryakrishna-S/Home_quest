@@ -423,21 +423,54 @@ def predict_and_analyze_property(
     """
     model = get_kerala_model()
 
-    # 1. Resolve coordinates
-    city_clean = (city or 'Kochi').strip().lower()
-    if latitude is None or longitude is None:
-        if city_clean in KERALA_DISTRICTS:
-            lat = KERALA_DISTRICTS[city_clean]['lat']
-            lng = KERALA_DISTRICTS[city_clean]['lng']
-        else:
-            lat = 9.9816 # Default Kochi
-            lng = 76.2999
-    else:
+    # 1. Resolve coordinates & location preference
+    city_str = (city or '').strip().lower()
+    location_source = 'City Benchmark'
+
+    matched_district_key = None
+    if city_str:
+        for d_k in KERALA_DISTRICTS.keys():
+            if d_k == city_str or d_k in city_str or city_str in d_k:
+                matched_district_key = d_k
+                break
+
+    if latitude is not None and longitude is not None:
         lat = float(latitude)
         lng = float(longitude)
 
+        if matched_district_key:
+            city_info = KERALA_DISTRICTS[matched_district_key]
+            d_to_city = haversine(lat, lng, city_info['lat'], city_info['lng'])
+            if d_to_city <= 45.0:
+                location_source = f"{city_info['name']} (Pinpoint GPS)"
+            else:
+                # Prioritize selected city (e.g. Kannur) over stale/distant GPS coordinates
+                lat = city_info['lat']
+                lng = city_info['lng']
+                location_source = f"{city_info['name']} (District Benchmark)"
+        else:
+            # Reverse-match nearest district to the GPS coordinates
+            district_dists = []
+            for d_k, d_info in KERALA_DISTRICTS.items():
+                d = haversine(lat, lng, d_info['lat'], d_info['lng'])
+                district_dists.append((d, d_k))
+            district_dists.sort(key=lambda x: x[0])
+            matched_district_key = district_dists[0][1]
+            location_source = f"Current Device GPS ({KERALA_DISTRICTS[matched_district_key]['name']})"
+    else:
+        if matched_district_key:
+            city_info = KERALA_DISTRICTS[matched_district_key]
+            lat = city_info['lat']
+            lng = city_info['lng']
+            location_source = f"{city_info['name']} (District Benchmark)"
+        else:
+            lat = 9.9816 # Default Kochi
+            lng = 76.2999
+            matched_district_key = 'kochi'
+            location_source = 'Kochi (Default Benchmark)'
+
     # 2. Extract spatial metrics
-    spatial = get_kerala_spatial_metrics(lat, lng, city_clean)
+    spatial = get_kerala_spatial_metrics(lat, lng, matched_district_key)
     dist_nh66 = spatial['dist_nh66_km']
     dist_hw = spatial['dist_highway_km']
     dist_hub = spatial['nearest_it_hub_km']
@@ -616,7 +649,9 @@ def predict_and_analyze_property(
     return {
         'success': True,
         'district': district,
-        'city': city_clean.capitalize(),
+        'city': (city or district).capitalize(),
+        'location_source': location_source,
+        'coordinates': {'lat': round(lat, 6), 'lng': round(lng, 6)},
         'property_type': p_type,
         'area_sqft': area,
         'suggested_price': suggested_price,

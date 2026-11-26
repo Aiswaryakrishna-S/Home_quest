@@ -1,10 +1,33 @@
 from rest_framework import serializers
-from .models import Property, Enquiry, PropertyPurchase, PropertyTourSchedule
+from .models import Property, PropertyImage, Enquiry, PropertyPurchase, PropertyTourSchedule
+
+
+class PropertyImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyImage
+        fields = ['id', 'property', 'image', 'description', 'created_at']
+        read_only_fields = ['id', 'property', 'created_at']
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.image:
+            if request:
+                try:
+                    ret['image'] = request.build_absolute_uri(instance.image.url)
+                except Exception:
+                    ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
+            else:
+                ret['image'] = f"http://127.0.0.1:8000{instance.image.url}"
+        return ret
 
 
 class PropertySerializer(serializers.ModelSerializer):
     seller_name = serializers.SerializerMethodField()
     enquiry_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    gallery_images = PropertyImageSerializer(many=True, read_only=True)
     area = serializers.IntegerField(source='area_sqft', required=False, allow_null=True)
     distance_km = serializers.FloatField(read_only=True, required=False, default=None)
 
@@ -24,15 +47,40 @@ class PropertySerializer(serializers.ModelSerializer):
             'area_sqft',
             'area',
             'property_type',
+            'sub_type',
+            'bhk',
+            'bathrooms',
+            'furnishing',
+            'project_status',
+            'listed_by',
+            'carpet_area',
+            'maintenance_monthly',
+            'total_floors',
+            'floor_no',
+            'car_parking',
+            'facing',
+            'project_name',
             'image',
+            'gallery_images',
             'latitude',
             'longitude',
             'distance_km',
             'enquiry_count',
+            'likes_count',
+            'is_liked',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'seller', 'seller_name', 'enquiry_count', 'distance_km', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'seller', 'seller_name', 'enquiry_count', 'likes_count', 'is_liked', 'distance_km', 'created_at', 'updated_at']
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -74,6 +122,21 @@ class PropertySerializer(serializers.ModelSerializer):
             except (ValueError, TypeError):
                 pass
         return super().to_internal_value(mutable_data)
+
+    def validate(self, attrs):
+        prop_type = attrs.get('property_type')
+        if not prop_type and self.instance:
+            prop_type = self.instance.property_type
+        if prop_type == 'PLOT':
+            attrs['bhk'] = ''
+            attrs['bathrooms'] = ''
+            attrs['furnishing'] = ''
+            attrs['project_status'] = ''
+            attrs['carpet_area'] = None
+            attrs['total_floors'] = None
+            attrs['floor_no'] = None
+            attrs['car_parking'] = ''
+        return super().validate(attrs)
 
     def create(self, validated_data):
         request = self.context.get('request')

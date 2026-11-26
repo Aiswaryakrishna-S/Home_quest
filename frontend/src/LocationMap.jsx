@@ -20,19 +20,32 @@ const userMarkerIcon = L.divIcon({
   iconAnchor: [12, 12],
 });
 
-// City coordinate approximations for properties that don't have exact lat/lng
+// City coordinate approximations for Kerala districts and hubs
 const CITY_COORDINATES = {
-  mumbai: [19.076, 72.8777],
-  delhi: [28.7041, 77.1025],
+  kannur: [11.8745, 75.3704],
+  kochi: [9.9816, 76.2999],
+  ernakulam: [9.9816, 76.2999],
+  aluva: [10.1076, 76.3516],
+  kakkanad: [10.0159, 76.3419],
+  kozhikode: [11.2588, 75.7804],
+  calicut: [11.2588, 75.7804],
+  thiruvananthapuram: [8.5241, 76.9366],
+  trivandrum: [8.5241, 76.9366],
+  thrissur: [10.5276, 76.2144],
+  kottayam: [9.5916, 76.5222],
+  palakkad: [10.7867, 76.6548],
+  alappuzha: [9.4981, 76.3388],
+  kollam: [8.8932, 76.6141],
+  malappuram: [11.0510, 76.0711],
+  wayanad: [11.6103, 76.0827],
+  kasaragod: [12.4996, 74.9869],
+  pathanamthitta: [9.2648, 76.7870],
+  idukki: [9.8959, 76.7184],
   bangalore: [12.9716, 77.5946],
   bengaluru: [12.9716, 77.5946],
-  hyderabad: [17.385, 78.4867],
   chennai: [13.0827, 80.2707],
-  kolkata: [22.5726, 88.3639],
-  kochi: [9.9312, 76.2673],
-  chicago: [41.8781, -87.6298],
-  'new york': [40.7128, -74.006],
-  london: [51.5074, -0.1278],
+  mumbai: [19.076, 72.8777],
+  delhi: [28.7041, 77.1025],
 };
 
 export default function LocationMap({ properties = [], onSelectProperty, onLocationDetected }) {

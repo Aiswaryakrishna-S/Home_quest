@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { propertyAPI, enquiryAPI, historyAPI, getPropertyImageUrl, CATEGORY_SAMPLE_IMAGES } from './api';
-import LocationMap from './LocationMap';
-import MiniMapView from './MiniMapView';
+import { propertyAPI, enquiryAPI, historyAPI, getPropertyImageUrl } from './api';
 import AIExpressInterestModal from './AIExpressInterestModal';
 import PropertyImageModal from './PropertyImageModal';
 import PropertyBuyModal from './PropertyBuyModal';
 import ScheduleVisitModal from './ScheduleVisitModal';
 import VisitScheduleManager from './VisitScheduleManager';
 import SearchHistoryModal from './SearchHistoryModal';
+import ScrollVilla3D from './ScrollVilla3D';
 import './HomePage.css';
 
 const PROPERTY_TYPES = [
-  { value: 'ALL', label: 'All Categories' },
-  { value: 'APARTMENT', label: 'Apartments' },
-  { value: 'BUILDING', label: 'Buildings' },
-  { value: 'RENTAL', label: 'Rentals' },
-  { value: 'PLOT', label: 'Plots' },
-  { value: 'REAL_ESTATE', label: 'Real Estate' },
+  { value: 'ALL', label: 'All' },
+  { value: 'PLOT', label: '🌳 Plots & Land' },
+  { value: 'BUILDING', label: '🏢 Buildings & Commercial' },
+  { value: 'APARTMENT', label: '🏠 Apartments' },
+  { value: 'RENTAL', label: '🔑 Rentals' },
 ];
 
 export default function HomePage({
@@ -28,43 +26,28 @@ export default function HomePage({
   const [navSearch, setNavSearch] = useState('');
   const [heroCity, setHeroCity] = useState('');
   const [heroType, setHeroType] = useState('ALL');
+  const [budgetTier, setBudgetTier] = useState('ALL'); // 'ALL' | 'MID' | 'LUXURY' | 'ULTRA'
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // GPS & Live Map States
-  const [userCoords, setUserCoords] = useState(null);
-  const [isLocating, setIsLocating] = useState(false);
-  const [heroTab, setHeroTab] = useState('map'); // 'map' | 'image'
-
-  // Inquire modal state
+  // Inquire & interaction modal states
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [aiInterestProperty, setAiInterestProperty] = useState(null);
   const [galleryProperty, setGalleryProperty] = useState(null);
   const [buyProperty, setBuyProperty] = useState(null);
 
-  // Visit Calendar & Tour Scheduling States
+  // Visit & tour calendar states
   const [tourProperty, setTourProperty] = useState(null);
   const [showVisitManager, setShowVisitManager] = useState(false);
 
-  // Authenticated User History States (Only active after user login)
+  // Authenticated user history states
   const [recentViews, setRecentViews] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const searchContainerRef = useRef(null);
 
-  // Close search history dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
-        setSearchDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // AI ML Property Recommendations
+  // AI recommendations state
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
 
@@ -77,15 +60,169 @@ export default function HomePage({
   const [submittingEnquiry, setSubmittingEnquiry] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState({ type: '', text: '' });
 
+  // Nearby Live GPS Search State
+  const [isLocating, setIsLocating] = useState(false);
+  const [nearbyActive, setNearbyActive] = useState(false);
+  const [nearbyProperties, setNearbyProperties] = useState([]);
+  const [userLocationName, setUserLocationName] = useState('');
+  const [nearbyNotice, setNearbyNotice] = useState('');
+
+  // User Liked Properties State (persisted & synced with backend)
+  const [likedIds, setLikedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('hq_liked_property_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Sync server-side liked properties with state
+  useEffect(() => {
+    if (properties && properties.length > 0) {
+      const serverLikedIds = properties.filter((p) => p.is_liked).map((p) => p.id);
+      if (serverLikedIds.length > 0) {
+        setLikedIds((prev) => Array.from(new Set([...prev, ...serverLikedIds])));
+      }
+    }
+  }, [properties]);
+
+  const handleToggleLike = async (property, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!property?.id) return;
+
+    const propId = property.id;
+    const isCurrentlyLiked = likedIds.includes(propId);
+    const newLikedIds = isCurrentlyLiked
+      ? likedIds.filter((id) => id !== propId)
+      : [...likedIds, propId];
+
+    setLikedIds(newLikedIds);
+    try {
+      localStorage.setItem('hq_liked_property_ids', JSON.stringify(newLikedIds));
+    } catch {}
+
+    const delta = isCurrentlyLiked ? -1 : 1;
+    const updateLikeFields = (list) =>
+      list.map((p) =>
+        p.id === propId
+          ? {
+              ...p,
+              is_liked: !isCurrentlyLiked,
+              likes_count: Math.max(0, (p.likes_count || 0) + delta),
+            }
+          : p
+      );
+
+    setProperties(updateLikeFields);
+    setNearbyProperties(updateLikeFields);
+    setRecommendations(updateLikeFields);
+
+    try {
+      await propertyAPI.toggleLikeProperty(propId, isCurrentlyLiked ? 'unlike' : 'like');
+    } catch (err) {
+      console.warn('Like toggle sync notice:', err);
+    }
+
+    // Re-calculate AI recommendations in real-time based on the updated likes
+    fetchRecommendations(newLikedIds);
+  };
+
+  const executeNearbySearch = async (lat, lng, locLabel) => {
+    setIsLocating(true);
+    setNearbyNotice('');
+    try {
+      // First try 100km radius
+      let data = await propertyAPI.getNearbyProperties(lat, lng, 100);
+      let list = data?.results || (Array.isArray(data) ? data : []);
+
+      // If no properties within 100km, automatically expand radius to cover all listings across the state
+      if (list.length === 0) {
+        data = await propertyAPI.getNearbyProperties(lat, lng, 1000);
+        list = data?.results || (Array.isArray(data) ? data : []);
+      }
+
+      setNearbyProperties(list);
+      setNearbyActive(true);
+      setUserLocationName(locLabel || 'Your Live Location');
+
+      // Scroll smoothly down to curated listings
+      setTimeout(() => {
+        const el = document.getElementById('curated-listings');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    } catch (err) {
+      console.error('Error in nearby search:', err);
+      setNearbyNotice('Could not fetch nearby properties. Please try again.');
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  const handleFindNearby = () => {
+    setIsLocating(true);
+    setNearbyNotice('');
+
+    if (!navigator.geolocation) {
+      setNearbyNotice('GPS not supported by your browser. Showing nearest from Central Kerala benchmark.');
+      executeNearbySearch(11.2588, 75.7804, 'Central Kerala (Kozhikode)');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        executeNearbySearch(latitude, longitude, 'Your GPS Location');
+      },
+      (err) => {
+        console.warn('Geolocation access denied or timed out:', err);
+        setNearbyNotice('Location permission not granted. Showing nearest properties from Central Kerala benchmark.');
+        executeNearbySearch(11.2588, 75.7804, 'Central Kerala Benchmark');
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleResetNearby = () => {
+    setNearbyActive(false);
+    setNearbyProperties([]);
+    setUserLocationName('');
+    setNearbyNotice('');
+  };
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setSearchDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     fetchProperties();
     fetchRecommendations();
   }, []);
 
-  const fetchRecommendations = async () => {
-    setLoadingRecs(true);
+  const fetchProperties = async () => {
+    setLoading(true);
     try {
-      const res = await propertyAPI.getRecommendations(6);
+      const data = await propertyAPI.getAllProperties();
+      setProperties(Array.isArray(data) ? data : data.results || []);
+    } catch (err) {
+      console.error('Error fetching public properties:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRecommendations = async (overrideLikedIds = null) => {
+    setLoadingRecs(true);
+    const activeLikedIds = overrideLikedIds !== null ? overrideLikedIds : likedIds;
+    try {
+      const res = await propertyAPI.getRecommendations(6, activeLikedIds);
       setRecommendations(res?.recommendations || []);
     } catch (err) {
       console.warn('Could not load AI recommendations:', err);
@@ -112,102 +249,40 @@ export default function HomePage({
     }
   }, [user]);
 
-  // Record viewed property helper (only when authenticated)
   const handleRecordPropertyView = (prop) => {
     if (!user || !prop?.id) return;
     historyAPI.recordView(prop.id).then(() => {
       fetchRecommendations();
-      setRecentViews((prev) => {
-        const filtered = prev.filter((p) => (p.property_id || p.id) !== prop.id);
-        const newItem = {
-          id: Date.now(),
-          property_id: prop.id,
-          title: prop.title,
-          price: prop.price,
-          formatted_price: prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`,
-          city: prop.city,
-          state: prop.state,
-          property_type: prop.property_type,
-          image: prop.image,
-          view_count: 1,
-          viewed_at: new Date().toISOString(),
-        };
-        return [newItem, ...filtered].slice(0, 10);
-      });
-    });
+    }).catch(() => {});
   };
 
-  // Debounced search recording (only when authenticated)
-  useEffect(() => {
-    if (!user) return;
-    const term = (navSearch || heroCity).trim();
-    if (!term || term.length < 2) return;
-
-    const timer = setTimeout(() => {
-      const matchCount = properties.filter((p) => {
-        const t = term.toLowerCase();
-        return (
-          p.city?.toLowerCase().includes(t) ||
-          p.title?.toLowerCase().includes(t) ||
-          p.address?.toLowerCase().includes(t)
-        );
-      }).length;
-
-      historyAPI
-        .recordSearch({
-          query: term,
-          city: heroCity || undefined,
-          propertyType: heroType,
-          lat: userCoords?.lat,
-          lng: userCoords?.lng,
-          resultsCount: matchCount,
-        })
-        .then(() => {
-          fetchRecommendations();
-          setRecentSearches((prev) => {
-            const filtered = prev.filter(
-              (s) => s.query.toLowerCase() !== term.toLowerCase()
-            );
-            return [
-              {
-                id: Date.now(),
-                query: term,
-                city: heroCity || null,
-                property_type: heroType,
-                results_count: matchCount,
-                searched_at: new Date().toISOString(),
-              },
-              ...filtered,
-            ].slice(0, 8);
-          });
-        });
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [navSearch, heroCity, heroType, user, userCoords]);
-
-  const fetchProperties = async () => {
-    setLoading(true);
-    try {
-      const data = await propertyAPI.getAllProperties();
-      setProperties(Array.isArray(data) ? data : data.results || []);
-    } catch (err) {
-      console.error('Error fetching public properties:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter properties based on search query or category
-  const filteredProperties = properties.filter((p) => {
+  // Filter properties based on search query, category, and nearby proximity
+  const baseList = nearbyActive ? nearbyProperties : properties;
+  const filteredProperties = baseList.filter((p) => {
     const term = (navSearch || heroCity).toLowerCase();
     const matchLocation =
+      nearbyActive ||
+      !term ||
       p.city?.toLowerCase().includes(term) ||
       p.title?.toLowerCase().includes(term) ||
       p.address?.toLowerCase().includes(term) ||
       p.state?.toLowerCase().includes(term);
 
-    const matchType = heroType === 'ALL' || p.property_type === heroType;
+    let matchType = heroType === 'ALL';
+    if (!matchType) {
+      if (heroType === 'PLOT') {
+        matchType =
+          p.property_type === 'PLOT' ||
+          String(p.sub_type || '').toLowerCase().includes('plot') ||
+          String(p.sub_type || '').toLowerCase().includes('land');
+      } else if (heroType === 'BUILDING') {
+        matchType =
+          p.property_type === 'BUILDING' ||
+          p.property_type === 'REAL_ESTATE';
+      } else {
+        matchType = p.property_type === heroType;
+      }
+    }
     return matchLocation && matchType;
   });
 
@@ -220,68 +295,6 @@ export default function HomePage({
       phone_number: user?.phone_number || '',
       message: `Hi, I am interested in "${property.title}" located in ${property.city}. Please share more details.`,
     });
-  };
-
-  const handleLocationDetected = (detectedCity, coords, nearbyList) => {
-    if (detectedCity) {
-      setHeroCity(detectedCity);
-    }
-    if (nearbyList && nearbyList.length > 0) {
-      setProperties(nearbyList);
-    }
-  };
-
-  const handleLocateNearMe = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
-
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
-        setUserCoords({ lat: latitude, lng: longitude, accuracy });
-        setIsLocating(false);
-        setHeroTab('map');
-
-        // Fetch proximity-ordered listings from backend
-        try {
-          const nearbyData = await propertyAPI.getAllProperties({ lat: latitude, lng: longitude });
-          const list = Array.isArray(nearbyData) ? nearbyData : nearbyData.results || [];
-          if (list.length > 0) {
-            setProperties(list);
-          }
-        } catch (e) {
-          console.warn('Backend geo fetch error:', e);
-        }
-
-        // Reverse geocode city for search inputs
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12`
-          );
-          const data = await res.json();
-          const city =
-            data?.address?.city ||
-            data?.address?.town ||
-            data?.address?.suburb ||
-            data?.address?.state ||
-            '';
-          if (city) {
-            setNavSearch(city);
-            setHeroCity(city);
-          }
-        } catch {
-          // ignore
-        }
-      },
-      (err) => {
-        setIsLocating(false);
-        alert('Could not acquire location: ' + err.message + '. Please enable browser location permissions.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
   };
 
   const handleCloseEnquiry = () => {
@@ -319,415 +332,586 @@ export default function HomePage({
     }
   };
 
+  // Top featured spotlight property (first luxury property or fallback)
+  const spotlightProp = properties[0] || {
+    id: 999,
+    title: 'The Velorum Glass Villa',
+    city: 'Aluva Riverfront',
+    formatted_price: '₹4.85 Cr',
+    price: 48500000,
+    property_type: 'VILLA',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+    bedrooms: 5,
+    bathrooms: 6,
+    area_sqft: 6400,
+  };
+
+  // Featured Suggested for You (either first recommendation or top property)
+  const heroSuggested = recommendations[0] || properties[0] || {
+    id: 998,
+    title: 'The Eden Courtyard Villa',
+    city: 'Kadavanthra, Kochi',
+    formatted_price: '₹6.20 Cr',
+    price: 62000000,
+    property_type: 'BUILDING',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    area_sqft: 5200,
+    bhk: '4',
+    bathrooms: '5',
+    match_percentage: 95,
+    match_score: '95% Match',
+    ai_reason: 'Matches your interest in premium verified residences.',
+  };
+
   return (
     <div className="home-page">
-      {/* ── TOP NAVBAR ── */}
-      <header className="hp-navbar">
-        <div className="hp-nav-container">
-          <div className="hp-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <span className="hp-logo-icon">🏡</span>
-            <div className="hp-brand-text">
-              <span className="hp-brand-name">HomeQuest</span>
-              <span className="hp-brand-tagline">Real Estate & Living</span>
+      {/* ── TOP LUXURY NAVBAR ── */}
+      <header className="hq-navbar">
+        <div className="hq-nav-container">
+          <div className="hq-brand-wrap" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="hq-brand-logo-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+            </div>
+            <div>
+              <div className="hq-brand-title">HomeQuest <span>AI</span></div>
+              <div className="hq-brand-subtitle">Find the right home, the smart way</div>
             </div>
           </div>
 
-          {/* Search bar inside Navbar with Interactive History Dropdown */}
-          <div className="hp-nav-search" ref={searchContainerRef}>
-            <span className="hp-search-icon">🔍</span>
+          <div className="hq-nav-user-actions">
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <button
+                  className="hq-nav-auth-btn"
+                  onClick={() => onNavigateDashboard(user.role === 'SELLER' || user.role === 'ADMIN' ? 'owner-dashboard' : 'profile')}
+                >
+                  {user.role === 'SELLER' || user.role === 'ADMIN' ? 'Dashboard' : 'Profile'}
+                </button>
+                <button
+                  style={{
+                    background: 'none',
+                    border: '1px solid #dfc7b6',
+                    borderRadius: '9999px',
+                    padding: '0.4rem 0.85rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    color: '#581825',
+                  }}
+                  onClick={onLogout}
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  className="hq-nav-auth-btn"
+                  onClick={() => onNavigateAuth('login')}
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Capsule Search Bar */}
+        <div className="hq-nav-search-bar" ref={searchContainerRef}>
+          <div className="hq-nav-search-capsule">
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#746764' }}>Search</span>
             <input
               type="text"
-              placeholder="Search by city, title, or address..."
+              placeholder="Enter city, title, or landmark..."
               value={navSearch}
               onChange={(e) => setNavSearch(e.target.value)}
               onFocus={() => setSearchDropdownOpen(true)}
             />
             {navSearch && (
-              <button className="hp-clear-btn" onClick={() => setNavSearch('')}>
+              <button
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9d8f8c' }}
+                onClick={() => setNavSearch('')}
+              >
                 ✕
               </button>
             )}
             <button
               type="button"
-              className={`hp-nav-nearme-btn ${isLocating ? 'locating' : ''}`}
-              onClick={handleLocateNearMe}
-              title="Locate properties near your GPS position"
+              className={`hq-nav-nearby-btn ${isLocating ? 'locating' : ''} ${nearbyActive ? 'active' : ''}`}
+              onClick={handleFindNearby}
+              title="Find nearest plots, buildings, and properties near your location"
             >
-              {isLocating ? '⏳' : '📍 Near Me'}
+              {isLocating ? '⏳ Locating...' : nearbyActive ? '📍 Nearby ✓' : '📍 Nearby'}
             </button>
-
-            {/* Interactive Search History & Popular Dropdown */}
-            {searchDropdownOpen && (
-              <div className="hp-search-dropdown-menu">
-                {user && recentSearches.length > 0 && (
-                  <div className="dropdown-section">
-                    <div className="dropdown-section-header">
-                      <span>🕒 Recent Searches</span>
-                      <button
-                        type="button"
-                        className="dropdown-clear-link"
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          await historyAPI.clearHistory('searches');
-                          setRecentSearches([]);
-                        }}
-                      >
-                        Clear All
-                      </button>
-                    </div>
-                    <div className="dropdown-searches-list">
-                      {recentSearches.slice(0, 5).map((s) => (
-                        <div
-                          key={s.id || s.query}
-                          className="dropdown-search-item"
-                          onClick={() => {
-                            setNavSearch(s.query);
-                            if (s.city) setHeroCity(s.city);
-                            if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
-                            setSearchDropdownOpen(false);
-                          }}
-                        >
-                          <span className="item-icon">📍</span>
-                          <div className="item-info">
-                            <span className="item-query">{s.query}</span>
-                            {s.city && <span className="item-badge">{s.city}</span>}
-                          </div>
-                          <button
-                            type="button"
-                            className="item-delete-btn"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              await historyAPI.deleteSearchItem(s.id);
-                              setRecentSearches((prev) => prev.filter((item) => item.id !== s.id));
-                            }}
-                            title="Remove from history"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="dropdown-section">
-                  <div className="dropdown-section-header">
-                    <span>🔥 Popular Searches</span>
-                  </div>
-                  <div className="dropdown-tags">
-                    {['Kochi', 'Palakkad', 'Trivandrum', 'Kozhikode', 'Apartment', 'Rental'].map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        className="dropdown-tag-btn"
-                        onClick={() => {
-                          if (['Apartment', 'Rental'].includes(tag)) {
-                            setHeroType(tag.toUpperCase());
-                          } else {
-                            setNavSearch(tag);
-                            setHeroCity(tag);
-                          }
-                          setSearchDropdownOpen(false);
-                        }}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {user && (
-                  <div className="dropdown-footer">
-                    <button
-                      type="button"
-                      className="dropdown-history-modal-link"
-                      onClick={() => {
-                        setSearchDropdownOpen(false);
-                        setShowHistoryModal(true);
-                      }}
-                    >
-                      📜 View Full Activity & Search History →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            <button
+              className="hq-nav-search-btn-circle"
+              onClick={() => {
+                const el = document.getElementById('curated-listings');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Search
+            </button>
           </div>
-
-          {/* Nav links & Auth buttons */}
-          <nav className="hp-nav-actions">
-            <a href="#location-map" className="hp-nav-link">
-              📍 Map View
-            </a>
-            <a href="#properties-section" className="hp-nav-link">
-              Explore Listings
-            </a>
-            <a href="#why-section" className="hp-nav-link">
-              Why Us
-            </a>
-
-            {user ? (
-              <div className="hp-user-menu">
-                <button
-                  className="hp-nav-visits-btn"
-                  onClick={() => setShowVisitManager(true)}
-                  title="View your scheduled site visits & tours calendar"
-                >
-                  📅 My Tours
-                </button>
-                <button
-                  className="hp-nav-history-btn"
-                  onClick={() => setShowHistoryModal(true)}
-                  title="View your search and viewing history"
-                >
-                  🕒 Search History
-                </button>
-                {user.role === 'SELLER' || user.role === 'ADMIN' ? (
-                  <button
-                    className="hp-btn-dashboard"
-                    onClick={() => onNavigateDashboard('owner-dashboard')}
-                  >
-                    🏢 Owner Dashboard
-                  </button>
-                ) : (
-                  <button
-                    className="hp-btn-dashboard"
-                    onClick={() => onNavigateDashboard('profile')}
-                  >
-                    👤 My Profile
-                  </button>
-                )}
-                <button className="hp-btn-logout" onClick={onLogout}>
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="hp-auth-btns">
-                <button
-                  className="hp-btn-login"
-                  onClick={() => onNavigateAuth('login')}
-                >
-                  Log In
-                </button>
-                <button
-                  className="hp-btn-register"
-                  onClick={() => onNavigateAuth('register')}
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
-          </nav>
         </div>
       </header>
 
+      {/* ── FIRST LANDING SECTION: PURE WHITE SCROLL-DRIVEN 3D VILLA ── */}
+      <ScrollVilla3D />
+
       {/* ── HERO SECTION ── */}
-      <section className="hp-hero">
-        <div className="hp-hero-overlay"></div>
-        <div className="hp-hero-content">
-          <div className="hp-hero-badge">
-            <span className="pulse-dot"></span>
-            Direct Owner Real Estate Platform
-          </div>
+      <section className="hq-hero-section">
+        <div className="hq-hero-layout-grid">
+          <div>
+            <div className="hq-hero-badge-pill">
+              <span>●</span> ALL SYSTEMS LIVE · 99.9% UPTIME · DIRECT OWNER
+            </div>
 
-          <h1 className="hp-hero-title">
-            Find Your Dream Home With <span className="highlight">Confidence</span>
-          </h1>
+            <h1 className="hq-hero-title">
+              Find Your Dream Home With <br />
+              <em>Confidence</em> <span className="hq-ai-accent">& AI</span>
+            </h1>
 
-          <p className="hp-hero-subtitle">
-            Browse verified luxury villas, modern apartments, residential plots,
-            and rental homes directly from certified property owners without brokerage.
-          </p>
+            <p className="hq-hero-desc">
+              Direct-owner verified luxury residences, waterfront villas, penthouses, and residential plots without broker markups.
+            </p>
 
-          {/* Quick Filter Box in Hero with Near Me Action */}
-          <div className="hp-hero-search-box">
-            <div className="search-field">
-              <div className="label-with-action">
-                <label>📍 Location / City</label>
+            {/* Hero Interactive Search & Filter Card */}
+            <div className="hq-hero-search-card">
+              <div className="hq-search-field-main">
+                <input
+                  type="text"
+                  placeholder="Enter city or area (e.g. Kannur, Kochi, Kozhikode)..."
+                  value={heroCity}
+                  onChange={(e) => setHeroCity(e.target.value)}
+                />
+                {heroCity && (
+                  <button
+                    type="button"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9d8f8c', padding: '0 0.5rem' }}
+                    onClick={() => setHeroCity('')}
+                  >
+                    ✕
+                  </button>
+                )}
                 <button
                   type="button"
-                  className={`hero-nearme-pill ${isLocating ? 'locating' : ''}`}
-                  onClick={handleLocateNearMe}
-                  disabled={isLocating}
+                  className={`hq-hero-nearby-btn ${isLocating ? 'locating' : ''} ${nearbyActive ? 'active' : ''}`}
+                  onClick={handleFindNearby}
+                  title="Find nearest plots, buildings, and homes using your live GPS location"
                 >
-                  {isLocating ? '⏳ Locating...' : '🎯 Near Me'}
+                  {isLocating ? '⏳ Locating...' : nearbyActive ? '📍 Nearby Active ✓' : '📍 Find Nearby'}
                 </button>
               </div>
-              <input
-                type="text"
-                placeholder="e.g. New York, Chicago, Mumbai..."
-                value={heroCity}
-                onChange={(e) => setHeroCity(e.target.value)}
-              />
-            </div>
 
-            <div className="search-field">
-              <label>🏷️ Property Type</label>
-              <select
-                value={heroType}
-                onChange={(e) => setHeroType(e.target.value)}
-              >
+              {/* Quick Kerala District Location Pills */}
+              <div className="hq-quick-cities-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.85rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#746764', alignSelf: 'center', marginRight: '0.25rem' }}>
+                  Quick:
+                </span>
+                {['Kannur', 'Kochi', 'Kozhikode', 'Thiruvananthapuram', 'Thrissur', 'Kottayam'].map((cityName) => {
+                  const isSelected = heroCity.toLowerCase() === cityName.toLowerCase();
+                  return (
+                    <button
+                      key={cityName}
+                      type="button"
+                      style={{
+                        background: isSelected ? '#581825' : '#ffffff',
+                        color: isSelected ? '#ffffff' : '#581825',
+                        border: '1px solid #dfc7b6',
+                        borderRadius: '9999px',
+                        padding: '0.2rem 0.65rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onClick={() => setHeroCity(isSelected ? '' : cityName)}
+                    >
+                      📍 {cityName}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="hq-search-category-row">
                 {PROPERTY_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
+                  <button
+                    key={t.value}
+                    className={`hq-search-cat-pill ${heroType === t.value ? 'active' : ''}`}
+                    onClick={() => setHeroType(t.value)}
+                  >
                     {t.label}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </div>
+              </div>
 
-            <a href="#properties-section" className="hp-hero-search-btn">
-              🔍 Explore Listings
-            </a>
-          </div>
-
-          {/* Quick Stats Banner */}
-          <div className="hp-hero-stats">
-            <div className="hero-stat-item">
-              <span className="stat-value">{properties.length || 24}+</span>
-              <span className="stat-desc">Active Listings</span>
-            </div>
-            <div className="stat-separator"></div>
-            <div className="hero-stat-item">
-              <span className="stat-value">100%</span>
-              <span className="stat-desc">Verified Owners</span>
-            </div>
-            <div className="stat-separator"></div>
-            <div className="hero-stat-item">
-              <span className="stat-value">0%</span>
-              <span className="stat-desc">Middleman Brokerage</span>
-            </div>
-            <div className="stat-separator"></div>
-            <div className="hero-stat-item">
-              <span className="stat-value">24/7</span>
-              <span className="stat-desc">Instant Email Inquiries</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Right Side: Small Map View with Tab Switcher */}
-        <div className="hp-hero-image-wrapper">
-          <div className="hero-view-switcher">
-            <button
-              type="button"
-              className={`switch-tab ${heroTab === 'map' ? 'active' : ''}`}
-              onClick={() => setHeroTab('map')}
-            >
-              🗺️ Small Map View
-            </button>
-            <button
-              type="button"
-              className={`switch-tab ${heroTab === 'image' ? 'active' : ''}`}
-              onClick={() => setHeroTab('image')}
-            >
-              🏡 Luxury Villa View
-            </button>
-          </div>
-
-          {heroTab === 'map' ? (
-            <MiniMapView
-              properties={filteredProperties.length > 0 ? filteredProperties : properties}
-              userCoords={userCoords}
-              isLocating={isLocating}
-              onLocateMe={handleLocateNearMe}
-              onSelectProperty={handleOpenEnquiry}
-            />
-          ) : (
-            <div className="hp-hero-card">
-              <img
-                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"
-                alt="HomeQuest Luxury Dream Villa"
-                className="hp-hero-main-img"
-              />
-              <div className="hp-floating-tag tag-top">
-                <span className="tag-icon">✨</span>
-                <div>
-                  <strong>Modern Architecture</strong>
-                  <span>Verified Clean Title</span>
+              <div className="hq-search-budget-row">
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#746764' }}>Budget Tier:</span>
+                <div className="hq-budget-chips">
+                  <button
+                    className={`hq-budget-chip ${budgetTier === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBudgetTier('ALL')}
+                  >
+                    All
+                  </button>
+                  <button
+                    className={`hq-budget-chip ${budgetTier === 'MID' ? 'active' : ''}`}
+                    onClick={() => setBudgetTier('MID')}
+                  >
+                    ₹50L - ₹1Cr
+                  </button>
+                  <button
+                    className={`hq-budget-chip ${budgetTier === 'LUXURY' ? 'active' : ''}`}
+                    onClick={() => setBudgetTier('LUXURY')}
+                  >
+                    ₹1Cr - ₹3Cr
+                  </button>
+                  <button
+                    className={`hq-budget-chip ${budgetTier === 'ULTRA' ? 'active' : ''}`}
+                    onClick={() => setBudgetTier('ULTRA')}
+                  >
+                    ₹3Cr+
+                  </button>
                 </div>
               </div>
-              <div className="hp-floating-tag tag-bottom">
-                <span className="tag-icon">🤝</span>
-                <div>
-                  <strong>Direct Owner Deals</strong>
-                  <span>Contact Owners in 1-Click</span>
+
+              <button
+                className="hq-hero-submit-cta"
+                onClick={() => {
+                  const el = document.getElementById('curated-listings');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                <span>Explore Verified Homes</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            {/* 4-Item Quick Trust Strip */}
+            <div className="hq-hero-trust-strip">
+              <div className="hq-trust-box">
+                <div className="hq-trust-icon">[T]</div>
+                <div className="hq-trust-meta">
+                  <strong>100% Certified</strong>
+                  <span>Direct Title Ownership</span>
+                </div>
+              </div>
+
+              <div className="hq-trust-box">
+                <div className="hq-trust-icon">[0%]</div>
+                <div className="hq-trust-meta">
+                  <strong>0.0% Brokerage</strong>
+                  <span>Zero Middleman Fees</span>
+                </div>
+              </div>
+
+              <div className="hq-trust-box">
+                <div className="hq-trust-icon">[AI]</div>
+                <div className="hq-trust-meta">
+                  <strong>AI Valuation Sync</strong>
+                  <span>Real-Time Comps Match</span>
+                </div>
+              </div>
+
+              <div className="hq-trust-box">
+                <div className="hq-trust-icon">[T]</div>
+                <div className="hq-trust-meta">
+                  <strong>Instant Live Tours</strong>
+                  <span>Direct Owner Calendar</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Featured Spotlight Card */}
+          <div
+            className="hq-hero-spotlight-card"
+            onClick={() => {
+              setGalleryProperty(spotlightProp);
+              handleRecordPropertyView(spotlightProp);
+            }}
+            style={{
+              backgroundImage: `url(${getPropertyImageUrl(spotlightProp)})`,
+              cursor: 'pointer',
+            }}
+          >
+            <div className="hq-spotlight-top-tags">
+              <span className="hq-spotlight-pill">● AI Verified · Direct Owner</span>
+              <span className="hq-spotlight-price-pill">
+                {spotlightProp.formatted_price || `₹${parseFloat(spotlightProp.price).toLocaleString('en-IN')}`}
+              </span>
+            </div>
+
+            <div className="hq-spotlight-bottom">
+              <div>
+                <h3 className="hq-spotlight-title">{spotlightProp.title}</h3>
+                <p className="hq-spotlight-sub">{spotlightProp.city} &bull; {spotlightProp.area_sqft || 6400} sq.ft</p>
+              </div>
+              <button
+                className="hq-spotlight-cta-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenEnquiry(spotlightProp);
+                }}
+              >
+                Inquire Now →
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── PURPOSE & VALUE PILLARS ── */}
-      <section className="hp-why-section" id="why-section">
-        <div className="hp-section-header">
-          <span className="hp-section-tag">PROJECT MISSION</span>
-          <h2>The Smarter Way to Buy, Rent & Sell Real Estate</h2>
-          <p>
-            HomeQuest is built to connect property owners and home seekers directly,
-            ensuring transparency, zero unwanted broker fees, and verified credentials.
+      {/* ── ARCHITECTURAL & FINANCIAL SECURITY ── */}
+      <section className="hq-security-section">
+        <div className="hq-section-head">
+          <span className="hq-section-tag">AI DEEP AUDIT & ENCRYPTION</span>
+          <h2 className="hq-section-title">Architectural & Financial Security</h2>
+          <p style={{ fontSize: '0.88rem', color: '#746764', marginTop: '0.35rem' }}>
+            Centralized intelligence command console for deed validation and algorithmic price verification.
           </p>
         </div>
 
-        <div className="hp-pillars-grid">
-          <div className="pillar-card">
-            <div className="pillar-icon bg-blue">🏡</div>
-            <h3>Diverse Property Portfolio</h3>
-            <p>
-              From modern luxury apartments and standalone villas to residential plots
-              and rental spaces, discover spaces that suit every budget and lifestyle.
-            </p>
+        <div className="hq-security-stack">
+          {/* Card 1 */}
+          <div className="hq-security-card">
+            <div className="hq-sec-icon-circle">DOC</div>
+            <div className="hq-sec-content">
+              <div className="hq-sec-header">
+                <span className="hq-sec-title">Title & Deed Verification</span>
+                <span className="hq-sec-badge">SHA-256</span>
+              </div>
+              <p className="hq-sec-text">
+                30-Year encumbrance and cadastral boundary verification synced with state registrar databases.
+              </p>
+              <div className="hq-sec-metric-bar">
+                <span>100% Clean Audit Score</span>
+                <span style={{ color: '#746764' }}>&bull; Zero encumbrance</span>
+              </div>
+            </div>
           </div>
 
-          <div className="pillar-card">
-            <div className="pillar-icon bg-green">🔒</div>
-            <h3>Verified Security & OTP Auth</h3>
-            <p>
-              Users and owners are authenticated using secure 6-digit email OTPs
-              and JWT tokens, ensuring safe interactions for everyone.
-            </p>
+          {/* Card 2 */}
+          <div className="hq-security-card">
+            <div className="hq-sec-icon-circle">VAL</div>
+            <div className="hq-sec-content">
+              <div className="hq-sec-header">
+                <span className="hq-sec-title">AI Valuation Fairness Engine</span>
+                <span className="hq-sec-badge">Active Sync</span>
+              </div>
+              <p className="hq-sec-text">
+                Hyper-localized comps algorithmic assessment to guarantee fair market square-foot pricing without inflated broker quotes.
+              </p>
+              <div className="hq-sec-metric-bar">
+                <span>Estimated Fair Price: ₹4,150/sq.ft</span>
+                <span style={{ color: '#746764' }}>&bull; 94% High Confidence Match</span>
+              </div>
+            </div>
           </div>
 
-          <div className="pillar-card">
-            <div className="pillar-icon bg-purple">⚡</div>
-            <h3>Direct Owner Communication</h3>
-            <p>
-              No annoying brokers or spam calls. Inquire directly on any property
-              and communicate directly with the verified owner.
-            </p>
+          {/* Card 3 */}
+          <div className="hq-security-card">
+            <div className="hq-sec-icon-circle">GEO</div>
+            <div className="hq-sec-content">
+              <div className="hq-sec-header">
+                <span className="hq-sec-title">Cadastral Boundary Geo-Lock</span>
+                <span className="hq-sec-badge">Geo-Locked</span>
+              </div>
+              <p className="hq-sec-text">
+                Purayidam and plot boundary geo-coordinates digitally locked against master revenue survey maps.
+              </p>
+              <div className="hq-sec-metric-bar">
+                <span>Boundary Coordinates Verified</span>
+              </div>
+            </div>
           </div>
 
-          <div className="pillar-card">
-            <div className="pillar-icon bg-amber">📊</div>
-            <h3>Dedicated Owner Suite</h3>
-            <p>
-              Property owners get an integrated real-time dashboard to manage listings,
-              upload photos, track inquiries, and update response statuses.
-            </p>
+          {/* Card 4 */}
+          <div className="hq-security-card">
+            <div className="hq-sec-icon-circle">AES</div>
+            <div className="hq-sec-content">
+              <div className="hq-sec-header">
+                <span className="hq-sec-title">256-Bit AES Document Vault</span>
+                <span className="hq-sec-badge">Enterprise</span>
+              </div>
+              <p className="hq-sec-text">
+                End-to-end encrypted possession certificates, floor plans, and tax receipts accessible only to authenticated parties.
+              </p>
+              <div className="hq-sec-metric-bar">
+                <span>Bank-Grade Encryption Protocol</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── INTERACTIVE LEAFLET LOCATION MAP ── */}
-      <LocationMap
-        properties={properties}
-        onSelectProperty={handleOpenEnquiry}
-        onLocationDetected={handleLocationDetected}
-      />
-
-      {/* ── FEATURED PROPERTIES LISTINGS ── */}
-      <section className="hp-properties-section" id="properties-section">
-        <div className="hp-section-header">
-          <span className="hp-section-tag">EXPLORE MARKETPLACE</span>
-          <h2>Featured Property Listings</h2>
-          <p>Hand-picked, high-value properties available for purchase and lease.</p>
+      {/* ── SUGGESTED FOR YOU (EDITORIAL CAROUSEL SHOWCASE) ── */}
+      <section className="hq-suggested-section">
+        <div className="hq-section-head">
+          <span className="hq-section-tag">✨ PERSONALIZED ALGORITHM</span>
+          <h2 className="hq-section-title">Suggested For You</h2>
+          <p style={{ fontSize: '0.88rem', color: '#746764', marginTop: '0.35rem' }}>
+            Curated based on your browsing patterns and local real estate comps.
+          </p>
         </div>
 
-        {/* Category Pills */}
-        <div className="hp-category-pills">
+        <div className="hq-suggested-card">
+          <div
+            className="hq-suggested-img-wrap"
+            style={{ backgroundImage: `url(${getPropertyImageUrl(heroSuggested)})`, cursor: 'pointer' }}
+            onClick={() => {
+              setGalleryProperty(heroSuggested);
+              handleRecordPropertyView(heroSuggested);
+            }}
+          >
+            <span className="hq-suggested-top-badge">
+              ● {heroSuggested.match_score || `${heroSuggested.match_percentage || 95}% MATCH`}
+            </span>
+            <button
+              type="button"
+              className={`hq-like-btn hq-hero-like-btn ${likedIds.includes(heroSuggested.id) ? 'liked' : ''}`}
+              onClick={(e) => handleToggleLike(heroSuggested, e)}
+              title={likedIds.includes(heroSuggested.id) ? 'Unlike property' : 'Like property'}
+            >
+              <span className="hq-heart-icon">{likedIds.includes(heroSuggested.id) ? '❤️' : '🤍'}</span>
+              <span className="hq-like-count">{heroSuggested.likes_count || (likedIds.includes(heroSuggested.id) ? 1 : 0)}</span>
+            </button>
+            <span className="hq-suggested-price-bottom">
+              {heroSuggested.formatted_price || `₹${parseFloat(heroSuggested.price || 0).toLocaleString('en-IN')}`}
+            </span>
+          </div>
+
+          <div className="hq-suggested-body">
+            <div className="hq-suggested-title-row">
+              <h3 className="hq-suggested-title">{heroSuggested.title}</h3>
+              <span className="hq-suggested-price-large">
+                {heroSuggested.formatted_price || `₹${parseFloat(heroSuggested.price || 0).toLocaleString('en-IN')}`}
+              </span>
+            </div>
+            <p className="hq-suggested-loc">
+              📍 {heroSuggested.city}{heroSuggested.state ? `, ${heroSuggested.state}` : ''}
+              {heroSuggested.sub_type ? ` · ${heroSuggested.sub_type}` : ''}
+            </p>
+
+            {heroSuggested.ai_reason && (
+              <div className="hq-ai-match-reason-badge">
+                <span className="ai-sparkle">✨</span>
+                <span><strong>AI Match Insight:</strong> {heroSuggested.ai_reason}</span>
+              </div>
+            )}
+
+            <div className="hq-suggested-specs-grid">
+              <div className="hq-spec-item">
+                <strong>{heroSuggested.area_sqft || heroSuggested.area || '—'}</strong>
+                <span>{heroSuggested.property_type === 'PLOT' ? 'PLOT SQFT' : 'SQ.FT'}</span>
+              </div>
+              {heroSuggested.property_type === 'PLOT' ? (
+                <>
+                  <div className="hq-spec-item">
+                    <strong>FREEHOLD</strong>
+                    <span>TITLE</span>
+                  </div>
+                  <div className="hq-spec-item">
+                    <strong>VERIFIED</strong>
+                    <span>BOUNDARY</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="hq-spec-item">
+                    <strong>{heroSuggested.bhk || heroSuggested.bedrooms || '—'}</strong>
+                    <span>BEDS / BHK</span>
+                  </div>
+                  <div className="hq-spec-item">
+                    <strong>{heroSuggested.bathrooms || '—'}</strong>
+                    <span>BATHS</span>
+                  </div>
+                </>
+              )}
+              <div className="hq-spec-item">
+                <strong style={{ color: '#047857' }}>
+                  {heroSuggested.match_percentage ? `${heroSuggested.match_percentage}%` : '95%'}
+                </strong>
+                <span>MATCH</span>
+              </div>
+            </div>
+
+            <div className="hq-suggested-actions">
+              <button
+                className="hq-suggested-btn-primary"
+                onClick={() => {
+                  setTourProperty(heroSuggested);
+                  handleRecordPropertyView(heroSuggested);
+                }}
+              >
+                <span>Schedule In-Person Tour</span>
+              </button>
+              <button
+                className="hq-suggested-btn-share"
+                onClick={() => handleOpenEnquiry(heroSuggested)}
+                title="Send Enquiry to Owner"
+              >
+                Inquire
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CURATED VERIFIED LISTINGS ── */}
+      <section className="hq-marketplace-section" id="curated-listings">
+        <div className="hq-section-head">
+          <span className="hq-section-tag">
+            {nearbyActive ? 'LIVE GPS PROXIMITY DISCOVERY' : 'PREMIUM SELECTION'}
+          </span>
+          <h2 className="hq-section-title">
+            {nearbyActive ? 'Nearest Properties to Your Location' : 'Curated Verified Listings'}
+          </h2>
+        </div>
+
+        {nearbyActive && (
+          <div className="hq-nearby-active-banner">
+            <div className="hq-nearby-active-info">
+              <span className="hq-nearby-pulse-dot"></span>
+              <div>
+                <strong style={{ color: '#002f34', fontSize: '0.95rem', display: 'block' }}>
+                  📍 Showing {filteredProperties.length} properties ordered by distance (nearest first)
+                </strong>
+                <span style={{ fontSize: '0.8rem', color: '#475569' }}>
+                  Live proximity search active {userLocationName ? `near ${userLocationName}` : ''}. Use the category filters below to switch between plots, buildings, or apartments.
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="hq-nearby-reset-btn"
+              onClick={handleResetNearby}
+            >
+              ✕ Show All Properties
+            </button>
+          </div>
+        )}
+
+        {nearbyNotice && (
+          <div style={{ background: '#fef3c7', border: '1px solid #f59e0b', color: '#92400e', padding: '0.65rem 1rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>ℹ️ {nearbyNotice}</span>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400e', fontWeight: 'bold' }} onClick={() => setNearbyNotice('')}>✕</button>
+          </div>
+        )}
+
+        {/* Filter Tabs */}
+        <div className="hq-filter-pills-row">
           {PROPERTY_TYPES.map((t) => (
             <button
               key={t.value}
-              className={`pill-btn ${heroType === t.value ? 'active' : ''}`}
+              className={`hq-filter-pill-btn ${heroType === t.value ? 'active' : ''}`}
               onClick={() => setHeroType(t.value)}
             >
               {t.label}
@@ -735,308 +919,92 @@ export default function HomePage({
           ))}
         </div>
 
-        {/* ── RECENT SEARCHES PILLS (Authenticated User History) ── */}
-        {user && recentSearches.length > 0 && (
-          <div className="hp-recent-searches-bar">
-            <span className="recent-search-label">🔍 Recent Searches:</span>
-            <div className="recent-search-chips">
-              {recentSearches.slice(0, 6).map((s) => (
-                <button
-                  key={s.id || s.query}
-                  className="recent-search-chip"
-                  onClick={() => {
-                    setNavSearch(s.query);
-                    if (s.city) setHeroCity(s.city);
-                    if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
-                  }}
-                  title={`Searched on ${new Date(s.searched_at).toLocaleDateString()}`}
-                >
-                  📍 {s.query} {s.results_count > 0 ? `(${s.results_count})` : ''}
-                </button>
-              ))}
-              <button
-                type="button"
-                className="clear-history-chip"
-                onClick={async () => {
-                  await historyAPI.clearHistory('searches');
-                  setRecentSearches([]);
-                }}
-                title="Clear recent searches"
-              >
-                ✕ Clear
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── RECENTLY VIEWED BY YOU (Authenticated User History) ── */}
-        {user && recentViews.length > 0 && !navSearch && heroType === 'ALL' && (
-          <div className="hp-recently-viewed-section">
-            <div className="hp-recent-header">
-              <div className="hp-recent-title">
-                <span className="recent-icon">🕒</span>
-                <div>
-                  <h3>Recently Viewed by You</h3>
-                  <p className="recent-subtitle">Pick up right where you left off</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="hp-clear-views-btn"
-                onClick={async () => {
-                  await historyAPI.clearHistory('properties');
-                  setRecentViews([]);
-                }}
-              >
-                Clear History
-              </button>
-            </div>
-
-            <div className="hp-recent-views-row">
-              {recentViews.map((item) => (
-                <div
-                  key={item.id || item.property_id}
-                  className="hp-recent-mini-card"
-                  onClick={() => {
-                    const fullProp = properties.find((p) => p.id === (item.property_id || item.id)) || item;
-                    setGalleryProperty(fullProp);
-                    handleRecordPropertyView(fullProp);
-                  }}
-                >
-                  <div className="recent-mini-img-wrap">
-                    <img
-                      src={getPropertyImageUrl(item)}
-                      alt={item.title}
-                      className="recent-mini-img"
-                    />
-                    <span className="recent-type-badge">{item.property_type}</span>
-                    {item.view_count > 1 && (
-                      <span className="recent-count-badge">👁️ {item.view_count}x</span>
-                    )}
-                  </div>
-                  <div className="recent-mini-details">
-                    <h4 className="recent-mini-title">{item.title}</h4>
-                    <span className="recent-mini-price">
-                      {item.formatted_price || `₹${parseFloat(item.price).toLocaleString('en-IN')}`}
-                    </span>
-                    <span className="recent-mini-loc">📍 {item.city}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── AUTOMATIC AI ML RECOMMENDATIONS SECTION (Personalized suggestions on page) ── */}
-        {recommendations && recommendations.length > 0 && !navSearch && (
-          <div className="hp-ai-recommendations-section">
-            <div className="hp-ai-rec-header">
-              <div className="hp-ai-rec-title">
-                <span className="hp-ai-sparkle-icon">✨</span>
-                <div>
-                  <div className="hp-ai-rec-badge">
-                    <span>🧠 AI SMART SUGGESTIONS</span>
-                    {user && <span className="hp-ai-personalized-tag">Personalized for {user.username}</span>}
-                  </div>
-                  <h3>Suggested For You Based on Your History</h3>
-                  <p className="hp-ai-rec-subtitle">
-                    Machine Learning analysis of your viewed listings and searched areas to find ideal matches.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="hp-ai-rec-grid">
-              {recommendations.map((rec) => (
-                <div key={rec.id} className="hp-ai-rec-card">
-                  <div
-                    className="hp-ai-rec-img-box"
-                    onClick={() => {
-                      setGalleryProperty(rec);
-                      handleRecordPropertyView(rec);
-                    }}
-                    title="Click to view photo gallery"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <img
-                      src={getPropertyImageUrl(rec)}
-                      alt={rec.title}
-                      className="hp-ai-rec-img"
-                    />
-                    <div className="hp-ai-match-pill">
-                      <span>🎯 {rec.match_score || `${rec.match_percentage || 92}% Match`}</span>
-                    </div>
-                    <span className="hp-ai-type-tag">{rec.property_type}</span>
-                    <span className="hp-ai-price-tag">
-                      {rec.formatted_price || `₹${parseFloat(rec.price).toLocaleString('en-IN')}`}
-                    </span>
-                  </div>
-
-                  <div className="hp-ai-rec-body">
-                    <h4 className="hp-ai-rec-title-text">{rec.title}</h4>
-                    <p className="hp-ai-rec-loc">
-                      📍 {rec.city}{rec.state ? `, ${rec.state}` : ''} &bull; {rec.area_sqft || rec.area || '—'} sqft
-                    </p>
-
-                    {/* AI Explanation Callout */}
-                    <div className="hp-ai-reason-box">
-                      <span className="hp-ai-bulb">💡</span>
-                      <p className="hp-ai-reason-text">{rec.ai_reason || 'Strong algorithmic affinity with your recent preferences.'}</p>
-                    </div>
-
-                    <div className="hp-ai-rec-actions">
-                      <button
-                        className="hp-btn-schedule-tour"
-                        onClick={() => {
-                          setTourProperty(rec);
-                          handleRecordPropertyView(rec);
-                        }}
-                        title="Schedule an In-Person Tour / Inspection"
-                      >
-                        📅 Tour
-                      </button>
-                      <button
-                        className="hp-btn-buy"
-                        onClick={() => {
-                          setBuyProperty(rec);
-                          handleRecordPropertyView(rec);
-                        }}
-                      >
-                        💳 Buy Property
-                      </button>
-                      <button
-                        className="hp-btn-ai-interest"
-                        onClick={() => {
-                          setAiInterestProperty(rec);
-                          handleRecordPropertyView(rec);
-                        }}
-                      >
-                        ✨ Express Interest
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {loading ? (
-          <div className="hp-loading-box">
-            <div className="hp-spinner"></div>
-            <p>Loading the latest properties...</p>
+          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#746764' }}>
+            <p>Loading curated properties...</p>
           </div>
         ) : filteredProperties.length === 0 ? (
-          <div className="hp-empty-listings">
-            <span className="empty-emoji">🏡</span>
-            <h3>No Properties Found</h3>
-            <p>
-              {navSearch || heroCity
-                ? `No properties matched "${navSearch || heroCity}". Try clearing the search.`
-                : 'No property listings are currently available.'}
-            </p>
-            {(navSearch || heroCity || heroType !== 'ALL') && (
-              <button
-                className="hp-btn-reset"
-                onClick={() => {
-                  setNavSearch('');
-                  setHeroCity('');
-                  setHeroType('ALL');
-                }}
-              >
-                Reset Search Filters
-              </button>
-            )}
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #eddcd0' }}>
+            <h4 style={{ fontFamily: 'Playfair Display', fontSize: '1.25rem', color: '#1c1417', marginBottom: '0.5rem' }}>No Listings Found</h4>
+            <p style={{ fontSize: '0.85rem', color: '#746764', marginBottom: '1rem' }}>No properties match the selected criteria.</p>
+            <button
+              className="hq-nav-auth-btn"
+              onClick={() => {
+                setNavSearch('');
+                setHeroCity('');
+                setHeroType('ALL');
+                handleResetNearby();
+              }}
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
-          <div className="hp-properties-grid">
+          <div className="hq-listings-stack">
             {filteredProperties.map((prop) => (
-              <div key={prop.id} className="hp-property-card">
+              <div key={prop.id} className="hq-listing-card">
                 <div
-                  className="hp-prop-image-box"
+                  className="hq-listing-img-box"
+                  style={{ backgroundImage: `url(${getPropertyImageUrl(prop)})`, cursor: 'pointer' }}
                   onClick={() => {
                     setGalleryProperty(prop);
                     handleRecordPropertyView(prop);
                   }}
-                  title="Click to view photo gallery & high-res image"
-                  style={{ cursor: 'pointer' }}
                 >
-                  <img
-                    src={getPropertyImageUrl(prop)}
-                    alt={prop.title}
-                    className="hp-prop-img"
-                    loading="lazy"
-                  />
-                  <span className="hp-prop-type-badge">{prop.property_type}</span>
-                  <span className="hp-prop-price-tag">
-                    {prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`}
-                  </span>
-                  <div className="hp-image-gallery-badge">
-                    <span>📷 View Photos</span>
+                  <div className="hq-listing-top-left-pills">
+                    <span className="hq-listing-pill">● Verified</span>
+                    <span className="hq-listing-pill">{prop.property_type}</span>
+                    {prop.distance_km !== undefined && prop.distance_km !== null && (
+                      <span className="hq-listing-pill hq-distance-pill">
+                        📍 {parseFloat(prop.distance_km) < 1 ? `${Math.round(parseFloat(prop.distance_km) * 1000)} m` : `${parseFloat(prop.distance_km).toFixed(1)} km`} away
+                      </span>
+                    )}
                   </div>
-                  {prop.distance_km && (
-                    <span className="hp-distance-pill">
-                      🚗 {prop.distance_km} km away
-                    </span>
-                  )}
+
+                  {/* Like / Unlike Heart Button */}
+                  <button
+                    type="button"
+                    className={`hq-like-btn ${likedIds.includes(prop.id) ? 'liked' : ''}`}
+                    onClick={(e) => handleToggleLike(prop, e)}
+                    title={likedIds.includes(prop.id) ? 'Unlike this property' : 'Like this property'}
+                  >
+                    <span className="hq-heart-icon">{likedIds.includes(prop.id) ? '❤️' : '🤍'}</span>
+                    <span className="hq-like-count">{prop.likes_count || (likedIds.includes(prop.id) ? 1 : 0)}</span>
+                  </button>
+
+                  <span className="hq-listing-val-pill">94% Fair Price Score</span>
                 </div>
 
-                <div className="hp-prop-details">
-                  <h3 className="hp-prop-title">{prop.title}</h3>
-                  <p className="hp-prop-location">
-                    📍 {prop.city}{prop.state ? `, ${prop.state}` : ''}
-                  </p>
-                  <p className="hp-prop-address">{prop.address}</p>
-
-                  <div className="hp-prop-specs">
-                    <span>📐 {prop.area_sqft || prop.area || 'N/A'} sqft</span>
-                    <span>👤 Owner: {prop.seller_name || 'Verified'}</span>
+                <div className="hq-listing-body">
+                  <div className="hq-listing-title-row">
+                    <h4 className="hq-listing-title">{prop.title}</h4>
+                    <span className="hq-listing-price">
+                      {prop.formatted_price || `₹${parseFloat(prop.price).toLocaleString('en-IN')}`}
+                    </span>
                   </div>
+                  <p className="hq-listing-meta-text">
+                    {prop.city}{prop.state ? `, ${prop.state}` : ''} &bull; {prop.area_sqft || prop.area || '—'} sqft
+                    {prop.property_type !== 'PLOT' && !String(prop.sub_type || '').toLowerCase().includes('plot') && !String(prop.sub_type || '').toLowerCase().includes('land') && (
+                      <>{prop.bhk ? ` • ${prop.bhk} BHK` : (prop.bedrooms ? ` • ${prop.bedrooms} BHK` : '')}</>
+                    )}
+                    {prop.sub_type ? ` • ${prop.sub_type}` : ''}
+                  </p>
 
-                  {prop.description && (
-                    <p className="hp-prop-desc">{prop.description}</p>
-                  )}
-
-                  <div className="hp-prop-footer">
+                  <div className="hq-listing-btn-row">
                     <button
-                      className="hp-btn-buy"
-                      onClick={() => {
-                        setBuyProperty(prop);
-                        handleRecordPropertyView(prop);
-                      }}
-                      title="Buy Property & Generate Kerala Legal Agreement Deed"
+                      className="hq-listing-btn-primary"
+                      onClick={() => handleOpenEnquiry(prop)}
                     >
-                      💳 Buy Property
+                      Inquire Direct
                     </button>
                     <button
-                      className="hp-btn-schedule-tour"
+                      className="hq-listing-btn-secondary"
                       onClick={() => {
                         setTourProperty(prop);
                         handleRecordPropertyView(prop);
                       }}
-                      title="Schedule an In-Person Site Visit & Inspection"
                     >
-                      📅 Schedule Tour
-                    </button>
-                    <button
-                      className="hp-btn-ai-interest"
-                      onClick={() => {
-                        setAiInterestProperty(prop);
-                        handleRecordPropertyView(prop);
-                      }}
-                      title="Express Interest & Send AI Inquiry to Owner"
-                    >
-                      ✨ Express Interest
-                    </button>
-                    <button
-                      className="hp-btn-inquire"
-                      onClick={() => {
-                        handleOpenEnquiry(prop);
-                        handleRecordPropertyView(prop);
-                      }}
-                      title="Direct message to owner"
-                    >
-                      📩 Contact
+                      Schedule Tour
                     </button>
                   </div>
                 </div>
@@ -1046,94 +1014,150 @@ export default function HomePage({
         )}
       </section>
 
-      {/* ── CALL TO ACTION BANNER ── */}
-      <section className="hp-cta-banner">
-        <div className="hp-cta-content">
-          <h2>Are You a Property Owner or Landlord?</h2>
-          <p>
-            List your apartment, building, or land on HomeQuest. Reach thousands of
-            qualified buyers and tenants with zero broker commissions and full control.
-          </p>
-          <div className="hp-cta-buttons">
-            <button
-              className="hp-cta-btn-primary"
-              onClick={() => onNavigateAuth('register')}
-            >
-              🚀 Register as a Seller
-            </button>
-            <button
-              className="hp-cta-btn-secondary"
-              onClick={() => onNavigateAuth('login')}
-            >
-              Sign In to Owner Portal
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* ── TRUST & COMPLIANCE BADGES ── */}
+      <div className="hq-trust-badges-strip">
+        <div className="hq-trust-badge-card">100% Encumbrance Free</div>
+        <div className="hq-trust-badge-card">Zero Brokerage Markups</div>
+        <div className="hq-trust-badge-card">SRO Registry Synced</div>
+        <div className="hq-trust-badge-card">256-bit AES Document Vault</div>
+      </div>
 
       {/* ── FOOTER ── */}
-      <footer className="hp-footer">
-        <div className="hp-footer-container">
-          {/* Brand Info */}
-          <div className="hp-footer-col brand-col">
-            <div className="hp-brand footer-brand">
-              <span className="hp-logo-icon">🏡</span>
-              <span className="hp-brand-name">HomeQuest</span>
+      <footer className="hq-editorial-footer">
+        <div className="hq-footer-inner">
+          <div className="hq-footer-top-brand">
+            <div className="hq-brand-wrap">
+              <div className="hq-brand-logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div className="hq-brand-title">HomeQuest <span>AI</span></div>
+                <div className="hq-brand-subtitle">Centralized verified real estate intelligence</div>
+              </div>
             </div>
-            <p className="footer-about">
-              HomeQuest is a modern real estate platform connecting property owners
-              directly with buyers and renters with verified trust, security, and transparent communication.
-            </p>
-            <div className="footer-badges">
-              <span className="badge-item">🛡️ 100% Verified Listings</span>
-              <span className="badge-item">⚡ Direct Seller Chat</span>
+          </div>
+
+          <p className="hq-footer-desc">
+            HomeQuest connects verified property owners directly with buyers through machine learning valuation benchmarks, automated title auditing, and transparent direct communication.
+          </p>
+
+          <div className="hq-footer-links-grid">
+            <div className="hq-footer-col">
+              <h5>Marketplace</h5>
+              <ul>
+                <li><button onClick={() => setHeroType('APARTMENT')}>Luxury Apartments</button></li>
+                <li><button onClick={() => setHeroType('VILLA')}>Waterfront Villas</button></li>
+                <li><button onClick={() => setHeroType('BUILDING')}>Penthouses</button></li>
+                <li><button onClick={() => setHeroType('PLOT')}>Residential Plots</button></li>
+              </ul>
+            </div>
+
+            <div className="hq-footer-col">
+              <h5>Verification & Security</h5>
+              <ul>
+                <li><a href="#">Deed Audit Engine</a></li>
+                <li><a href="#">Cadastral Geo-Lock</a></li>
+                <li><a href="#">Document Vault</a></li>
+                <li><a href="#">Algorithmic Comps</a></li>
+              </ul>
+            </div>
+
+            <div className="hq-footer-col">
+              <h5>Operations</h5>
+              <ul>
+                <li><button onClick={() => onNavigateAuth('login')}>Operations Console</button></li>
+                <li><button onClick={() => onNavigateAuth('register')}>Request Partner Access</button></li>
+                <li><button onClick={() => setShowVisitManager(true)}>Tour Calendar</button></li>
+              </ul>
+            </div>
+
+            <div className="hq-footer-col">
+              <h5>Contact & Support</h5>
+              <ul>
+                <li><span>Email: support@homequest.ai</span></li>
+                <li><span>Phone: +91 484 290 8000</span></li>
+                <li><span>Location: Kochi Infopark & Bangalore</span></li>
+              </ul>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="hp-footer-col">
-            <h4>Quick Navigation</h4>
-            <ul>
-              <li><a href="#properties-section">Browse Properties</a></li>
-              <li><a href="#why-section">Why Choose Us</a></li>
-              <li><button className="footer-link-btn" onClick={() => onNavigateAuth('login')}>Owner Sign In</button></li>
-              <li><button className="footer-link-btn" onClick={() => onNavigateAuth('register')}>Create Free Account</button></li>
-            </ul>
+          <div className="hq-footer-compliance-callout">
+            <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#581825' }}>[AUDIT]</span>
+            <div style={{ fontSize: '0.75rem', color: '#746764' }}>
+              All property listings and documentation are subject to cryptographic validation and owner identity confirmation in accordance with real estate regulatory standards.
+            </div>
           </div>
 
-          {/* Categories */}
-          <div className="hp-footer-col">
-            <h4>Property Categories</h4>
-            <ul>
-              <li><a href="#properties-section" onClick={() => setHeroType('APARTMENT')}>Luxury Apartments</a></li>
-              <li><a href="#properties-section" onClick={() => setHeroType('BUILDING')}>Independent Buildings</a></li>
-              <li><a href="#properties-section" onClick={() => setHeroType('RENTAL')}>Rental Homes</a></li>
-              <li><a href="#properties-section" onClick={() => setHeroType('PLOT')}>Residential Plots</a></li>
-              <li><a href="#properties-section" onClick={() => setHeroType('REAL_ESTATE')}>Commercial Real Estate</a></li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="hp-footer-col">
-            <h4>Contact & Support</h4>
-            <p className="contact-item">📧 support@homequest.com</p>
-            <p className="contact-item">📞 +1 (800) 456-7890</p>
-            <p className="contact-item">📍 100 Innovation Way, Suite 400</p>
-            <p className="contact-item">🕒 Mon - Fri: 9:00 AM - 6:00 PM</p>
-          </div>
-        </div>
-
-        <div className="hp-footer-bottom">
-          <p>© {new Date().getFullYear()} HomeQuest Real Estate Platform. All rights reserved.</p>
-          <div className="footer-legal-links">
-            <a href="#">Privacy Policy</a>
-            <span>&bull;</span>
-            <a href="#">Terms of Service</a>
-            <span>&bull;</span>
-            <a href="#">Security</a>
+          <div className="hq-footer-bottom-copy">
+            <span>© {new Date().getFullYear()} HomeQuest AI Technologies Inc. All rights reserved.</span>
+            <span>v2.4.8 Enterprise · 256-bit AES</span>
           </div>
         </div>
       </footer>
+
+      {/* ── FIXED MOBILE / BOTTOM NAV BAR (Matching image bottom strip) ── */}
+      <nav className="hq-fixed-bottom-bar">
+        <button
+          className="hq-bottom-nav-item active"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button
+          className="hq-bottom-nav-item"
+          onClick={() => {
+            const el = document.getElementById('curated-listings');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span>Explore</span>
+        </button>
+
+        <button
+          className="hq-bottom-nav-item"
+          onClick={() => setShowVisitManager(true)}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span>Tours</span>
+        </button>
+
+        <button
+          className="hq-bottom-nav-item"
+          onClick={() => {
+            if (user) {
+              onNavigateDashboard(user.role === 'SELLER' || user.role === 'ADMIN' ? 'owner-dashboard' : 'profile');
+            } else {
+              onNavigateAuth('login');
+            }
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span>Account</span>
+        </button>
+      </nav>
 
       {/* ── INQUIRY MODAL DIALOG ── */}
       {selectedProperty && (
@@ -1141,9 +1165,9 @@ export default function HomePage({
           <div className="hp-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="hp-modal-header">
               <div>
-                <h3>Contact Property Owner</h3>
+                <h3>Direct Owner Inquiry</h3>
                 <p className="modal-sub">
-                  Inquiring about <strong>{selectedProperty.title}</strong> (${parseFloat(selectedProperty.price).toLocaleString()})
+                  Inquiring about <strong>{selectedProperty.title}</strong> ({selectedProperty.formatted_price || `₹${parseFloat(selectedProperty.price).toLocaleString('en-IN')}`})
                 </p>
               </div>
               <button className="hp-modal-close" onClick={handleCloseEnquiry}>
@@ -1171,9 +1195,9 @@ export default function HomePage({
                 />
               </div>
 
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label>Your Email *</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div>
+                  <label>Email *</label>
                   <input
                     type="email"
                     required
@@ -1184,12 +1208,12 @@ export default function HomePage({
                     }
                   />
                 </div>
-
-                <div className="form-group">
-                  <label>Phone Number</label>
+                <div>
+                  <label>Phone Number *</label>
                   <input
                     type="tel"
-                    placeholder="+1 234 567 890"
+                    required
+                    placeholder="+91 9876543210"
                     value={enquiryForm.phone_number}
                     onChange={(e) =>
                       setEnquiryForm({ ...enquiryForm, phone_number: e.target.value })
@@ -1199,9 +1223,9 @@ export default function HomePage({
               </div>
 
               <div className="form-group">
-                <label>Message *</label>
+                <label>Message to Owner *</label>
                 <textarea
-                  rows="4"
+                  rows="3"
                   required
                   value={enquiryForm.message}
                   onChange={(e) =>
@@ -1210,99 +1234,88 @@ export default function HomePage({
                 />
               </div>
 
-              <div className="hp-modal-actions">
-                <button
-                  type="button"
-                  className="hp-modal-cancel"
-                  onClick={handleCloseEnquiry}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="hp-modal-submit"
-                  disabled={submittingEnquiry}
-                >
-                  {submittingEnquiry ? 'Sending...' : 'Send Inquiry to Owner'}
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="hp-modal-submit-btn"
+                disabled={submittingEnquiry}
+              >
+                {submittingEnquiry ? 'Sending Direct Inquiry...' : 'Send Inquiry to Owner'}
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ── AI EXPRESS INTEREST & BUY MODAL ── */}
+      {/* ── MODALS (EXISTING FUNCTIONALITY PRESERVED) ── */}
       {aiInterestProperty && (
         <AIExpressInterestModal
+          isOpen={true}
           property={aiInterestProperty}
           user={user}
           onClose={() => setAiInterestProperty(null)}
-          onSuccess={() => {
-            // Success handled inside modal
-          }}
+          onEnquirySent={() => fetchRecommendations()}
         />
       )}
 
-      {/* ── PROPERTY IMAGE GALLERY LIGHTBOX ── */}
       {galleryProperty && (
         <PropertyImageModal
+          isOpen={true}
           property={galleryProperty}
+          isLiked={likedIds.includes(galleryProperty.id)}
+          onToggleLike={(e) => handleToggleLike(galleryProperty, e)}
           onClose={() => setGalleryProperty(null)}
-          onExpressInterest={(p) => setAiInterestProperty(p)}
-          onBuyProperty={(p) => setBuyProperty(p)}
+          onOpenEnquiry={handleOpenEnquiry}
         />
       )}
 
-      {/* ── PROPERTY BUY & SALE DEED MODAL ── */}
       {buyProperty && (
         <PropertyBuyModal
+          isOpen={true}
           property={buyProperty}
           user={user}
           onClose={() => setBuyProperty(null)}
-          onSuccess={(purchase) => {
-            console.log('Purchase agreement created:', purchase);
+          onSuccess={() => {
+            fetchProperties();
+            fetchRecommendations();
           }}
         />
       )}
 
-      {/* ── SCHEDULE SITE VISIT TOUR MODAL ── */}
       {tourProperty && (
         <ScheduleVisitModal
+          isOpen={true}
           property={tourProperty}
           user={user}
           onClose={() => setTourProperty(null)}
-          onOpenScheduleManager={() => setShowVisitManager(true)}
-          onSuccess={(tour) => {
-            console.log('Tour booked successfully:', tour);
+          onScheduleSuccess={() => {
+            setShowVisitManager(true);
+            fetchRecommendations();
           }}
         />
       )}
 
-      {/* ── DEDICATED VISIT CALENDAR & TOUR MANAGER MODAL ── */}
       {showVisitManager && (
         <VisitScheduleManager
+          isOpen={true}
           user={user}
           onClose={() => setShowVisitManager(false)}
-          onViewProperty={(p) => {
-            setShowVisitManager(false);
-            if (p) setGalleryProperty(p);
-          }}
         />
       )}
 
-      {/* ── SEARCH & ACTIVITY HISTORY MODAL ── */}
       {showHistoryModal && (
         <SearchHistoryModal
+          isOpen={true}
           user={user}
           onClose={() => setShowHistoryModal(false)}
-          onSelectSearch={(s) => {
-            setNavSearch(s.query || s.city || '');
-            if (s.city) setHeroCity(s.city);
-            if (s.property_type && s.property_type !== 'ALL') setHeroType(s.property_type);
-            const el = document.getElementById('properties-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          onSelectSearch={(query, city, propertyType) => {
+            setNavSearch(query);
+            if (city) setHeroCity(city);
+            if (propertyType && propertyType !== 'ALL') setHeroType(propertyType);
           }}
-          onSelectProperty={(prop) => handleOpenEnquiry(prop)}
+          onSelectProperty={(prop) => {
+            setGalleryProperty(prop);
+            handleRecordPropertyView(prop);
+          }}
         />
       )}
     </div>

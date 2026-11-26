@@ -11,8 +11,8 @@ from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Property, Enquiry, PropertyPurchase, PropertyTourSchedule
-from .serializers import PropertySerializer, EnquirySerializer, PropertyPurchaseSerializer, PropertyTourScheduleSerializer
+from .models import Property, PropertyImage, PropertyLike, Enquiry, PropertyPurchase, PropertyTourSchedule
+from .serializers import PropertySerializer, PropertyImageSerializer, EnquirySerializer, PropertyPurchaseSerializer, PropertyTourScheduleSerializer
 from .permissions import IsOwnerOrReadOnly
 from .ml_pricing import predict_and_analyze_property
 from .agreement_generator import generate_sale_agreement_text
@@ -97,7 +97,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         user = self.request.user
         qs = Property.objects.all().select_related('seller').prefetch_related('enquiries')
 
-        # Filter: only properties relating to the logged-in Seller
+        # Filter: properties relating strictly to the logged-in Seller / Owner
         mine = self.request.query_params.get('mine')
         seller_param = self.request.query_params.get('seller')
 
@@ -239,7 +239,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         }
         """
         data = request.data
-        city = data.get('city') or 'Kochi'
+        city = data.get('city') or None
         property_type = data.get('property_type') or 'BUILDING'
         area_sqft = data.get('area_sqft') or 1500
         latitude = data.get('latitude')
@@ -277,9 +277,13 @@ class PropertyViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             limit = 6
 
+        liked_ids_param = request.query_params.get('liked_ids', '')
+        liked_ids = [int(x) for x in liked_ids_param.split(',') if x.strip().isdigit()]
+
         recommended_props = PropertyRecommendationEngine.get_recommendations_for_user(
             user=user,
             limit=limit,
+            liked_ids=liked_ids,
         )
 
         serializer = self.get_serializer(recommended_props, many=True)
@@ -290,6 +294,12 @@ class PropertyViewSet(viewsets.ModelViewSet):
         })
 
     def perform_create(self, serializer):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.filter(role='SELLER').first() or User.objects.first()
+
         # Auto-fill coordinates from city if seller didn't provide lat/long
         validated_data = serializer.validated_data
         lat = validated_data.get('latitude')
@@ -298,9 +308,11 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         if (lat is None or lng is None) and city in CITY_COORDINATES:
             city_lat, city_lng = CITY_COORDINATES[city]
-            serializer.save(seller=self.request.user, latitude=city_lat, longitude=city_lng)
+            prop = serializer.save(seller=user, latitude=city_lat, longitude=city_lng)
         else:
-            serializer.save(seller=self.request.user)
+            prop = serializer.save(seller=user)
+
+        self._handle_gallery_uploads(prop, self.request)
 
     def perform_update(self, serializer):
         validated_data = serializer.validated_data
@@ -310,9 +322,126 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
         if (lat is None or lng is None) and city in CITY_COORDINATES:
             city_lat, city_lng = CITY_COORDINATES[city]
-            serializer.save(latitude=city_lat, longitude=city_lng)
+            prop = serializer.save(latitude=city_lat, longitude=city_lng)
         else:
-            serializer.save()
+            prop = serializer.save()
+
+        self._handle_gallery_uploads(prop, self.request)
+
+    def _handle_gallery_uploads(self, prop, request):
+        """Helper to create PropertyImage instances from multipart request."""
+        # 1. Multi-file upload under 'gallery_images'
+        files = request.FILES.getlist('gallery_images') if hasattr(request.FILES, 'getlist') else []
+        if hasattr(request.data, 'getlist'):
+            descriptions = request.data.getlist('gallery_descriptions')
+        else:
+            raw_desc = request.data.get('gallery_descriptions', [])
+            descriptions = raw_desc if isinstance(raw_desc, list) else ([raw_desc] if raw_desc else [])
+
+        for idx, file in enumerate(files):
+            desc = descriptions[idx] if idx < len(descriptions) else ''
+            PropertyImage.objects.create(property=prop, image=file, description=desc)
+
+        # 2. Keyed files like 'gallery_image_0', 'gallery_image_1', etc. (resilient to gaps/order)
+        gallery_keys = sorted(
+            [k for k in request.FILES.keys() if k.startswith('gallery_image_')],
+            key=lambda k: int(k.split('_')[-1]) if k.split('_')[-1].isdigit() else 9999
+        )
+        for k in gallery_keys:
+            idx_suffix = k[len('gallery_image_'):]
+            file = request.FILES[k]
+            desc = request.data.get(f'gallery_description_{idx_suffix}', '')
+            PropertyImage.objects.create(property=prop, image=file, description=desc)
+
+    @action(detail=True, methods=['get', 'post'], parser_classes=[MultiPartParser, FormParser, JSONParser])
+    def images(self, request, pk=None):
+        """
+        Manage multiple property gallery photos with descriptions:
+        GET /api/properties/{id}/images/ -> List all gallery photos
+        POST /api/properties/{id}/images/ -> Upload one or multiple photos with descriptions
+        """
+        property_obj = self.get_object()
+
+        if request.method == 'GET':
+            serializer = PropertyImageSerializer(
+                property_obj.gallery_images.all(),
+                many=True,
+                context={'request': request}
+            )
+            return Response(serializer.data)
+
+        # POST: Batch or single upload
+        multi_files = request.FILES.getlist('gallery_images') or request.FILES.getlist('images')
+        if multi_files:
+            descriptions = request.data.getlist('gallery_descriptions') or request.data.getlist('descriptions')
+            created_instances = []
+            for idx, file in enumerate(multi_files):
+                desc = descriptions[idx] if idx < len(descriptions) else ''
+                inst = PropertyImage.objects.create(property=property_obj, image=file, description=desc)
+                created_instances.append(inst)
+            serializer = PropertyImageSerializer(created_instances, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return Response({'detail': 'No image file provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        description = request.data.get('description', '').strip()
+        img_instance = PropertyImage.objects.create(
+            property=property_obj,
+            image=image_file,
+            description=description,
+        )
+        serializer = PropertyImageSerializer(img_instance, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path=r'images/(?P<image_id>\d+)')
+    def delete_image(self, request, pk=None, image_id=None):
+        """
+        DELETE /api/properties/{id}/images/{image_id}/ -> Remove a gallery photo
+        """
+        property_obj = self.get_object()
+        try:
+            img_instance = property_obj.gallery_images.get(id=image_id)
+            img_instance.delete()
+            return Response({'detail': 'Property photo deleted successfully.'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'detail': 'Photo not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.AllowAny])
+    def like(self, request, pk=None):
+        """
+        Toggle like/unlike for a property:
+        POST /api/properties/{id}/like/
+        Supports authenticated users (persisted in PropertyLike)
+        and guest/anonymous tokens.
+        """
+        property_obj = self.get_object()
+        user = request.user if (request.user and request.user.is_authenticated) else None
+
+        if user:
+            existing = property_obj.likes.filter(user=user).first()
+            if existing:
+                existing.delete()
+                is_liked = False
+                msg = "Property unliked."
+            else:
+                property_obj.likes.create(user=user)
+                is_liked = True
+                msg = "Property liked! AI suggestions updated."
+        else:
+            action_type = request.data.get('action')
+            is_liked = action_type == 'like'
+            msg = f"Property {'liked' if is_liked else 'unliked'}."
+
+        likes_count = property_obj.likes.count()
+        return Response({
+            'status': 'success',
+            'message': msg,
+            'is_liked': is_liked,
+            'likes_count': likes_count,
+            'property_id': property_obj.id,
+        }, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get', 'post'], permission_classes=[permissions.AllowAny])
     def enquiries(self, request, pk=None):

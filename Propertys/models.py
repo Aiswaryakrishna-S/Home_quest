@@ -43,6 +43,21 @@ class Property(models.Model):
         default=PropertyType.BUILDING,
     )
 
+    # ── Extended Attributes (House & Apartment specifications from OLX format) ──
+    sub_type            = models.CharField(max_length=50, blank=True, default='', help_text='Flats / Apartments, House & Villa, etc.')
+    bhk                 = models.CharField(max_length=10, blank=True, default='', help_text='1, 2, 3, 4, 4+')
+    bathrooms           = models.CharField(max_length=10, blank=True, default='', help_text='1, 2, 3, 4, 4+')
+    furnishing          = models.CharField(max_length=30, blank=True, default='', help_text='Furnished, Semi-Furnished, Unfurnished')
+    project_status      = models.CharField(max_length=30, blank=True, default='', help_text='Ready to Move, Under Construction')
+    listed_by           = models.CharField(max_length=30, blank=True, default='Owner', help_text='Builder, Dealer, Owner')
+    carpet_area         = models.PositiveIntegerField(null=True, blank=True, help_text='Carpet Area sqft')
+    maintenance_monthly = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Monthly Maintenance')
+    total_floors        = models.PositiveIntegerField(null=True, blank=True)
+    floor_no            = models.PositiveIntegerField(null=True, blank=True)
+    car_parking         = models.CharField(max_length=10, blank=True, default='', help_text='0, 1, 2, 3, 3+')
+    facing              = models.CharField(max_length=30, blank=True, default='', help_text='East, North, etc.')
+    project_name        = models.CharField(max_length=100, blank=True, default='')
+
     # ── Optional image upload ──
     image = models.ImageField(upload_to='property_images/', blank=True, null=True)
 
@@ -65,6 +80,51 @@ class Property(models.Model):
     def formatted_price(self):
         """Helper returning formatted price string e.g. ₹75,000"""
         return f"₹{self.price:,.2f}"
+
+
+class PropertyImage(models.Model):
+    """Multiple gallery photos for a property, each with a description/caption."""
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='gallery_images',
+    )
+    image = models.ImageField(upload_to='property_gallery/')
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        help_text='Description or caption for this photo (e.g. Master Bedroom, Modular Kitchen, Garden View)'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.property.title} – {self.description or 'Gallery Photo'}"
+
+
+class PropertyLike(models.Model):
+    """Tracks properties liked by users to power personalization and wishlists."""
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='likes',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='liked_properties',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'property')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} liked {self.property.title}"
 
 
 class Enquiry(models.Model):

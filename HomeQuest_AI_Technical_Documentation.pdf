@@ -1,0 +1,728 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R] /Count 7 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+7 0 obj
+<< /Length 2646 >>
+stream
+0.984 0.969 0.949 rg 1.20 w 0.875 0.780 0.714 RG 32.00 32.00 531.28 777.89 re B
+0.345 0.094 0.145 rg 32.00 795.89 531.28 14.00 re f
+0.761 0.608 0.388 rg 72.00 677.89 62.00 3.50 re f
+BT /F2 9.5 Tf 0.761 0.608 0.388 rg 72.00 651.89 Td (TECHNICAL & ARCHITECTURAL PROJECT DOCUMENTATION) Tj ET
+BT /F3 40.0 Tf 0.345 0.094 0.145 rg 72.00 593.89 Td (HomeQuest AI) Tj ET
+BT /F2 14.0 Tf 0.110 0.078 0.090 rg 72.00 565.89 Td (Intelligent Full-Stack Real Estate Marketplace for Kerala) Tj ET
+BT /F1 10.5 Tf 0.455 0.404 0.392 rg 72.00 541.89 Td (Complete technical documentation covering project vision, full-stack) Tj ET
+BT /F1 10.5 Tf 0.455 0.404 0.392 rg 72.00 525.89 Td (architecture, backend and frontend modules, JWT authentication lifecycle,) Tj ET
+BT /F1 10.5 Tf 0.455 0.404 0.392 rg 72.00 509.89 Td (Scikit-Learn Random Forest valuation, TF-IDF personalized recommendations,) Tj ET
+BT /F1 10.5 Tf 0.455 0.404 0.392 rg 72.00 493.89 Td (Hybrid RAG + Google Gemini AI, Leaflet GIS, Three.js 3D WebGL, and REST API) Tj ET
+BT /F1 10.5 Tf 0.455 0.404 0.392 rg 72.00 477.89 Td (reference.) Tj ET
+1.10 w 0.761 0.608 0.388 RG 72.00 451.89 m 523.28 451.89 l S
+1.000 1.000 1.000 rg 0.80 w 0.875 0.780 0.714 RG 72.00 377.89 451.28 52.00 re B
+0.345 0.094 0.145 rg 72.00 377.89 4.00 52.00 re f
+BT /F2 8.5 Tf 0.345 0.094 0.145 rg 86.00 409.89 Td (FRONTEND LAYER) Tj ET
+BT /F1 9.8 Tf 0.110 0.078 0.090 rg 86.00 391.89 Td (React 18.3.1 | Vite 5.4.11 | Axios 1.7.9 | Three.js 0.187.0 | Leaflet 1.9.4) Tj ET
+1.000 1.000 1.000 rg 0.80 w 0.875 0.780 0.714 RG 72.00 313.89 451.28 52.00 re B
+0.345 0.094 0.145 rg 72.00 313.89 4.00 52.00 re f
+BT /F2 8.5 Tf 0.345 0.094 0.145 rg 86.00 345.89 Td (BACKEND & SECURITY) Tj ET
+BT /F1 9.8 Tf 0.110 0.078 0.090 rg 86.00 327.89 Td (Django 5.2.15 | DRF 3.18.3 | SimpleJWT 5.5.1 | PostgreSQL \(:2222\) | SMTP OTP) Tj ET
+1.000 1.000 1.000 rg 0.80 w 0.875 0.780 0.714 RG 72.00 249.89 451.28 52.00 re B
+0.345 0.094 0.145 rg 72.00 249.89 4.00 52.00 re f
+BT /F2 8.5 Tf 0.345 0.094 0.145 rg 86.00 281.89 Td (MACHINE LEARNING & AI) Tj ET
+BT /F1 9.8 Tf 0.110 0.078 0.090 rg 86.00 263.89 Td (Scikit-Learn 1.9.1 \(RandomForest, TF-IDF\) | Pandas | NumPy | Joblib | Gemini LLM) Tj ET
+1.000 1.000 1.000 rg 0.80 w 0.875 0.780 0.714 RG 72.00 185.89 451.28 52.00 re B
+0.345 0.094 0.145 rg 72.00 185.89 4.00 52.00 re f
+BT /F2 8.5 Tf 0.345 0.094 0.145 rg 86.00 217.89 Td (KEY INNOVATIONS) Tj ET
+BT /F1 9.8 Tf 0.110 0.078 0.090 rg 86.00 199.89 Td (Kerala NH 66 Price Engine | Real-Time Likes AI | QuestBot RAG | 3D Villa Scroll) Tj ET
+BT /F1 8.5 Tf 0.455 0.404 0.392 rg 72.00 62.00 Td (HomeQuest AI Technologies  |  Verified Against Live Codebase) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 8968 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 2 of 7) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 779.89 Td (1. Why This Project? \(Problem Statement & Vision\)) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 772.89 m 549.28 772.89 l S
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 756.89 Td (Traditional real estate platforms in fast-growing regional markets like Kerala suffer from) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 743.09 Td (opaque broker-inflated pricing, lack of infrastructure-aware valuation tools, static) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 729.29 Td (unpersonalized listings, and fragmented offline workflows for site visits and legal sale) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 715.49 Td (agreements. HomeQuest AI unifies the entire lifecycle:) Tj ET
+0.761 0.608 0.388 rg 50.00 699.19 3.50 3.50 re f
+BT 60.00 696.69 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Objective Kerala ML Valuations: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Predicts fair market values using Random Forest) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 683.29 Td (regression calibrated for Kerala's 14 districts, NH 66 6-lane expansion, NH 544, MC) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 669.89 Td (Road, and major IT hubs \(Infopark, Technopark, Cyberpark\).) Tj ET
+0.761 0.608 0.388 rg 50.00 655.99 3.50 3.50 re f
+BT 60.00 653.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Real-Time Personalized Discovery: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Dynamically adapts recommendations from Likes, Views,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 640.09 Td (and Searches using TF-IDF NLP similarity and 5-factor multi-variate scoring \(for both) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 626.69 Td (logged-in users and guests\).) Tj ET
+0.761 0.608 0.388 rg 50.00 612.79 3.50 3.50 re f
+BT 60.00 610.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Strict Owner Isolation & Direct Deals: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Every seller gets a private dashboard where) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 596.89 Td (portfolio properties and incoming buyer enquiries are strictly scoped to their) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 583.49 Td (authenticated account.) Tj ET
+0.761 0.608 0.388 rg 50.00 569.59 3.50 3.50 re f
+BT 60.00 567.09 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Grounded Hybrid RAG AI \(QuestBot\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Answers natural-language real estate queries against) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 553.69 Td (live PostgreSQL listings and platform guides, plus drafts and dispatches contextual AI) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 540.29 Td (buyer inquiries.) Tj ET
+0.761 0.608 0.388 rg 50.00 526.39 3.50 3.50 re f
+BT 60.00 523.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Legal, Tour & 3D Workflows: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Automates Kerala Stamp Duty \(8%\) and Registration Fee \(2%\)) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 510.49 Td (calculations, generates structured Sale Agreements, manages tour readiness checklists,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 497.09 Td (and opens with a scroll-driven 3D architectural villa.) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 470.69 Td (2. Technology Stack & How the Stack Works Together) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 463.69 m 549.28 463.69 l S
+1.000 1.000 1.000 rg 0.80 w 0.875 0.780 0.714 RG 46.00 312.69 503.28 135.00 re B
+BT /F2 8.2 Tf 0.455 0.404 0.392 rg 205.23 433.69 Td (FIGURE 1: HOMEQUEST AI FULL-STACK ARCHITECTURE) Tj ET
+0.984 0.969 0.949 rg 1.00 w 0.761 0.608 0.388 RG 61.00 326.69 136.00 96.00 re B
+BT /F2 8.0 Tf 0.345 0.094 0.145 rg 91.76 408.69 Td (REACT 18 + VITE SPA) Tj ET
+1.000 1.000 1.000 rg 0.60 w 0.875 0.780 0.714 RG 69.00 374.69 120.00 26.00 re B
+BT /F2 7.2 Tf 0.110 0.078 0.090 rg 83.14 389.69 Td (UI, 3D Villa & Leaflet GIS) Tj ET
+BT /F1 6.6 Tf 0.455 0.404 0.392 rg 85.34 379.69 Td (Home | Dashboard | QuestBot) Tj ET
+1.000 1.000 1.000 rg 0.60 w 0.875 0.780 0.714 RG 69.00 338.69 120.00 28.00 re B
+BT /F2 7.2 Tf 0.110 0.078 0.090 rg 90.19 354.69 Td (Axios JWT Interceptors) Tj ET
+BT /F1 6.6 Tf 0.455 0.404 0.392 rg 85.34 344.69 Td (Bearer + 401 Silent Refresh) Tj ET
+1.000 1.000 1.000 rg 1.00 w 0.345 0.094 0.145 RG 229.00 326.69 136.00 96.00 re B
+BT /F2 8.0 Tf 0.345 0.094 0.145 rg 249.96 408.69 Td (DJANGO 5.2 + DRF \(:8000\)) Tj ET
+0.984 0.969 0.949 rg 0.60 w 0.875 0.780 0.714 RG 237.00 380.69 120.00 20.00 re B
+BT /F2 7.2 Tf 0.345 0.094 0.145 rg 259.96 387.69 Td (CORS + SimpleJWT Auth) Tj ET
+0.984 0.969 0.949 rg 0.60 w 0.875 0.780 0.714 RG 237.00 338.69 120.00 34.00 re B
+BT /F2 7.2 Tf 0.110 0.078 0.090 rg 258.19 360.69 Td (ViewSets & Serializers) Tj ET
+BT /F1 6.5 Tf 0.455 0.404 0.392 rg 250.82 349.69 Td (/api/auth/ | /api/properties/) Tj ET
+BT /F1 6.5 Tf 0.455 0.404 0.392 rg 247.63 341.69 Td (/api/chatbot/ | Owner Isolation) Tj ET
+0.984 0.969 0.949 rg 1.00 w 0.761 0.608 0.388 RG 397.00 326.69 136.00 96.00 re B
+BT /F2 8.0 Tf 0.345 0.094 0.145 rg 431.68 408.69 Td (AI / ML & STORAGE) Tj ET
+1.000 1.000 1.000 rg 0.60 w 0.875 0.780 0.714 RG 405.00 384.69 120.00 17.00 re B
+BT /F1 6.9 Tf 0.110 0.078 0.090 rg 422.74 390.69 Td (RandomForest Price Engine) Tj ET
+1.000 1.000 1.000 rg 0.60 w 0.875 0.780 0.714 RG 405.00 362.69 120.00 17.00 re B
+BT /F1 6.9 Tf 0.110 0.078 0.090 rg 424.43 368.69 Td (TF-IDF Recommender & RAG) Tj ET
+0.345 0.094 0.145 rg 405.00 338.69 120.00 19.00 re f
+BT /F2 6.9 Tf 1.000 1.000 1.000 rg 422.74 345.69 Td (PostgreSQL \(:2222\) + SMTP) Tj ET
+1.30 w 0.345 0.094 0.145 RG 197.00 374.69 m 229.00 374.69 l S
+BT /F2 6.2 Tf 0.345 0.094 0.145 rg 206.92 379.69 Td (REST) Tj ET
+1.30 w 0.345 0.094 0.145 RG 365.00 374.69 m 397.00 374.69 l S
+BT /F2 6.2 Tf 0.345 0.094 0.145 rg 376.44 379.69 Td (ORM) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 292.69 Td (2.1 Frontend Stack) Tj ET
+0.345 0.094 0.145 rg 46.00 263.69 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 269.69 Td (Technology) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 162.72 269.69 Td (Version) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 233.18 269.69 Td (Purpose in HomeQuest AI) Tj ET
+1.000 1.000 1.000 rg 46.00 232.29 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 232.29 m 549.28 232.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 251.19 Td (React) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 251.19 Td (18.3.1) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 251.19 Td (Component-based SPA architecture, hooks state management, role-based) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 239.99 Td (dashboards) Tj ET
+0.988 0.976 0.961 rg 46.00 212.09 503.28 20.20 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 212.09 m 549.28 212.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 219.79 Td (Vite) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 219.79 Td (5.4.11) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 219.79 Td (ES-module dev server with HMR and optimized production bundler) Tj ET
+1.000 1.000 1.000 rg 46.00 180.69 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 180.69 m 549.28 180.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 199.59 Td (Axios) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 199.59 Td (1.7.9) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 199.59 Td (HTTP client with JWT request interceptors and transparent 401 silent) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 188.39 Td (token refresh) Tj ET
+0.988 0.976 0.961 rg 46.00 149.29 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 149.29 m 549.28 149.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 168.19 Td (Three.js) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 168.19 Td (0.187.0) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 168.19 Td (Pure-white scroll-driven 3D architectural villa \(RoomEnvironment IBL,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 156.99 Td (RoundedBoxGeometry, PBR textures\)) Tj ET
+1.000 1.000 1.000 rg 46.00 117.89 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 117.89 m 549.28 117.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 136.79 Td (Leaflet) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 136.79 Td (1.9.4) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 136.79 Td (Interactive GIS mapping, GPS coordinate pinpicker, and Near Me radius) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 125.59 Td (visualization) Tj ET
+0.988 0.976 0.961 rg 46.00 86.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 86.49 m 549.28 86.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 105.39 Td (Custom CSS3) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 105.39 Td (Modern CSS) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 105.39 Td (Warm editorial oatmeal & burgundy theme \(Playfair Display + Plus) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 94.19 Td (Jakarta Sans\)) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 8467 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 3 of 7) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 783.89 Td (2.2 Backend & Database Stack) Tj ET
+0.345 0.094 0.145 rg 46.00 754.89 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 760.89 Td (Technology) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 172.79 760.89 Td (Version) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 243.25 760.89 Td (Purpose in HomeQuest AI) Tj ET
+1.000 1.000 1.000 rg 46.00 723.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 723.49 m 549.28 723.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 742.39 Td (Django) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 742.39 Td (5.2.15) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 742.39 Td (Core Python web framework, ORM, custom User model, migrations,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 731.19 Td (admin, media files) Tj ET
+0.988 0.976 0.961 rg 46.00 692.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 692.09 m 549.28 692.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 710.99 Td (Django REST Framework) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 710.99 Td (3.18.3) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 710.99 Td (ModelViewSets, APIViews, custom @action endpoints, serializers &) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 699.79 Td (permissions) Tj ET
+1.000 1.000 1.000 rg 46.00 660.69 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 660.69 m 549.28 660.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 679.59 Td (SimpleJWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 679.59 Td (5.5.1) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 679.59 Td (Stateless JWT authentication \(60-min Access, 7-day rotating &) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 668.39 Td (blacklisted Refresh\)) Tj ET
+0.988 0.976 0.961 rg 46.00 629.29 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 629.29 m 549.28 629.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 648.19 Td (django-cors-headers) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 648.19 Td (Active) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 648.19 Td (Cross-Origin Resource Sharing between React \(:5173\) and Django API) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 636.99 Td (\(:8000\)) Tj ET
+1.000 1.000 1.000 rg 46.00 597.89 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 597.89 m 549.28 597.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 616.79 Td (PostgreSQL) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 616.79 Td (Port 2222) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 616.79 Td (Primary relational database \(homequest_db\) storing users, listings,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 605.59 Td (likes, tours & deeds) Tj ET
+0.988 0.976 0.961 rg 46.00 566.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 566.49 m 549.28 566.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 585.39 Td (SQLite \(:memory:\)) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 585.39 Td (Built-in) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 585.39 Td (Isolated in-memory test database activated automatically during) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 574.19 Td (manage.py test) Tj ET
+1.000 1.000 1.000 rg 46.00 535.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 535.09 m 549.28 535.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 553.99 Td (Gmail SMTP \(TLS\)) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 172.79 553.99 Td (Port 587) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 553.99 Td (6-digit OTP email delivery for account signup verification &) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 243.25 542.79 Td (password reset) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 513.09 Td (2.3 AI & Machine Learning Stack) Tj ET
+0.345 0.094 0.145 rg 46.00 484.09 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 490.09 Td (Technology) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 162.72 490.09 Td (Version) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 233.18 490.09 Td (Purpose in HomeQuest AI) Tj ET
+1.000 1.000 1.000 rg 46.00 452.69 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 452.69 m 549.28 452.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 471.59 Td (Scikit-Learn) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 471.59 Td (1.9.1) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 471.59 Td (RandomForestRegressor, OneHotEncoder, ColumnTransformer, Pipeline,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 460.39 Td (TfidfVectorizer, cosine_similarity) Tj ET
+0.988 0.976 0.961 rg 46.00 421.29 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 421.29 m 549.28 421.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 440.19 Td (Pandas) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 440.19 Td (2.2.2) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 440.19 Td (Feature engineering, 5,000-row Kerala benchmark CSV generation,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 428.99 Td (inference DataFrames) Tj ET
+1.000 1.000 1.000 rg 46.00 401.09 503.28 20.20 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 401.09 m 549.28 401.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 408.79 Td (NumPy) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 408.79 Td (2.4.6) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 408.79 Td (Vectorized numeric math, similarity arrays, Gaussian affinity curves) Tj ET
+0.988 0.976 0.961 rg 46.00 369.69 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 369.69 m 549.28 369.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 388.59 Td (Joblib) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 388.59 Td (1.5.3) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 388.59 Td (Model serialization & in-memory singleton caching) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 377.39 Td (\(kerala_price_model.pkl\)) Tj ET
+1.000 1.000 1.000 rg 46.00 338.29 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 338.29 m 549.28 338.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 357.19 Td (Google Gemini API) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 162.72 357.19 Td (v1beta) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 357.19 Td (Generative LLM \(gemini-2.5-flash fallback chain\) for Hybrid RAG) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 233.18 345.99 Td (replies & AI inquiry drafting) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 316.29 Td (2.4 End-to-End Request Lifecycle) Tj ET
+0.761 0.608 0.388 rg 50.00 303.79 3.50 3.50 re f
+BT 60.00 301.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (1. React SPA Action: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (User triggers an event \(liking a property, analyzing price with AI,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 287.89 Td (searching Near Me, or querying QuestBot\).) Tj ET
+0.761 0.608 0.388 rg 50.00 273.99 3.50 3.50 re f
+BT 60.00 271.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (2. Axios Interceptor \(api.js\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Reads access_token from localStorage and injects) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 258.09 Td ('Authorization: Bearer <token>' automatically.) Tj ET
+0.761 0.608 0.388 rg 50.00 244.19 3.50 3.50 re f
+BT 60.00 241.69 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (3. Django + SimpleJWT Gateway: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (CORS validates the Vite origin, JWTAuthentication) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 228.29 Td (verifies the token signature and sets request.user, and urls.py routes to Accounts,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 214.89 Td (Propertys, or Chatbot.) Tj ET
+0.761 0.608 0.388 rg 50.00 200.99 3.50 3.50 re f
+BT 60.00 198.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (4. ORM / ML / RAG Engine: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Executes owner-scoped SQL on PostgreSQL \(:2222\), or invokes) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 185.09 Td (ml_pricing.py \(RandomForest .pkl\), recommender_engine.py \(TF-IDF + Cosine\), or) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 171.69 Td (rag_engine.py \(Hybrid RAG + Gemini API\).) Tj ET
+0.761 0.608 0.388 rg 50.00 157.79 3.50 3.50 re f
+BT 60.00 155.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (5. JSON Response & Reactive UI: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (DRF serializes output cleanly; React updates cards,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 141.89 Td (charts, maps, and modals instantaneously.) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 9721 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 4 of 7) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 779.89 Td (3. Complete Module Breakdown) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 772.89 m 549.28 772.89 l S
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 750.89 Td (3.1 Backend Django Modules) Tj ET
+0.345 0.094 0.145 rg 46.00 721.89 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 727.89 Td (Module) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 132.52 727.89 Td (Key Files) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 258.34 727.89 Td (Core Responsibilities & Database Models) Tj ET
+1.000 1.000 1.000 rg 46.00 690.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 690.49 m 549.28 690.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 709.39 Td (myproject) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 709.39 Td (settings.py, urls.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 698.19 Td (__init__.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 709.39 Td (Auto .env loader, Postgres/SQLite test dual DB, SimpleJWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 698.19 Td (config, CORS/CSRF, root router, Windows TemporaryFile patch.) Tj ET
+0.988 0.976 0.961 rg 46.00 647.89 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 647.89 m 549.28 647.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 677.99 Td (Accounts) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 677.99 Td (models.py, views.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 666.79 Td (backends.py, urls.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 677.99 Td (Custom User \(ADMIN/AGENT/BUYER/SELLER\), EmailOrUsernameBackend,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 666.79 Td (2-step OTP PendingRegistration, PasswordResetOTP,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 655.59 Td (PropertyViewHistory, UserSearchHistory.) Tj ET
+1.000 1.000 1.000 rg 46.00 594.09 503.28 53.80 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 594.09 m 549.28 594.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 635.39 Td (Propertys) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 635.39 Td (models.py, views.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 624.19 Td (ml_pricing.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 612.99 Td (recommender_engine.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 635.39 Td (Property, PropertyImage, PropertyLike, Enquiry, PropertyPurchase) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 624.19 Td (\(Kerala 8% Stamp Duty + 2% Reg Fee + Sale Agreement\),) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 612.99 Td (PropertyTourSchedule \(JSON checklists\), Haversine nearby search,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 601.79 Td (ML Valuation & Recommender.) Tj ET
+0.988 0.976 0.961 rg 46.00 551.49 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 551.49 m 549.28 551.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 581.59 Td (Chatbot) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 581.59 Td (rag_engine.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 570.39 Td (knowledge_base.py,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 132.52 559.19 Td (views.py, urls.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 581.59 Td (HomeQuestRAG engine: intent classification, TF-IDF doc search,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 570.39 Td (NLP city/budget extraction, live ORM listing queries, Gemini LLM) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 258.34 559.19 Td (generation with offline fallback, AI Express Interest.) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 529.49 Td (3.2 Frontend React Modules \(frontend/src/\)) Tj ET
+0.345 0.094 0.145 rg 46.00 500.49 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 506.49 Td (Category) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 152.66 506.49 Td (Components) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 293.57 506.49 Td (Responsibilities) Tj ET
+1.000 1.000 1.000 rg 46.00 457.89 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 457.89 m 549.28 457.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 487.99 Td (App Shell & API) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 487.99 Td (App.jsx, api.js) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 487.99 Td (View routing, auth state sync, Axios JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 476.79 Td (request/401-refresh interceptors, category fallback) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 465.59 Td (media URL resolver.) Tj ET
+0.988 0.976 0.961 rg 46.00 415.29 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 415.29 m 549.28 415.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 445.39 Td (3D Landing Showcase) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 445.39 Td (ScrollVilla3D.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 445.39 Td (Pure-white centered HomeQuest AI opening screen that) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 434.19 Td (dissolves on scroll as a photorealistic 2-story Three.js) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 422.99 Td (villa builds piece-by-piece.) Tj ET
+1.000 1.000 1.000 rg 46.00 372.69 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 372.69 m 549.28 372.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 402.79 Td (Buyer Marketplace) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 402.79 Td (HomePage.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 402.79 Td (Hero showcase, live search, GPS Near Me radius finder,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 391.59 Td (category/budget filters, AI Suggested For You carousel,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 380.39 Td (optimistic Like/Unlike sync.) Tj ET
+0.988 0.976 0.961 rg 46.00 318.89 503.28 53.80 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 318.89 m 549.28 318.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 360.19 Td (Owner Command) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 348.99 Td (Center) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 360.19 Td (OwnerDashboard.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 348.99 Td (PropertyAttributesForm.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 360.19 Td (Strictly isolated seller portfolio stats, category-) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 348.99 Td (adaptive CRUD listing forms \(plots never get) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 337.79 Td (bedrooms/bathrooms\), batch gallery uploads, enquiry) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 326.59 Td (status workflow.) Tj ET
+1.000 1.000 1.000 rg 46.00 276.29 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 276.29 m 549.28 276.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 306.39 Td (AI & ML Widgets) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 306.39 Td (AIPriceAdvisor.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 295.19 Td (ChatBotWidget.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 283.99 Td (AIExpressInterestModal.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 306.39 Td (Interactive Kerala ML valuation & increment breakdown,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 295.19 Td (floating QuestBot RAG widget with property cards, 4-tone) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 283.99 Td (AI inquiry drafter/auto-sender.) Tj ET
+0.988 0.976 0.961 rg 46.00 233.69 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 233.69 m 549.28 233.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 263.79 Td (Inspection & Media) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 263.79 Td (PropertyDetailModal.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 252.59 Td (PropertyImageModal.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 241.39 Td (ImageLightbox.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 263.79 Td (Full property specification sheet, multi-photo gallery) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 252.59 Td (modal with Like toggle, and full-screen zoomable) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 241.39 Td (lightbox.) Tj ET
+1.000 1.000 1.000 rg 46.00 191.09 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 191.09 m 549.28 191.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 221.19 Td (Transactions &) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 209.99 Td (Tours) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 221.19 Td (PropertyBuyModal.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 209.99 Td (ScheduleVisitModal.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 198.79 Td (VisitScheduleManager.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 221.19 Td (Kerala stamp-duty calculator + digital Sale Agreement) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 209.99 Td (signing, site-visit booking, one-click rescheduling,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 198.79 Td (buyer/seller checklists.) Tj ET
+0.988 0.976 0.961 rg 46.00 148.49 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 148.49 m 549.28 148.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 178.59 Td (GIS & Auth Modals) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 178.59 Td (LocationMap.jsx,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 167.39 Td (MiniMapView.jsx, Login/Regis) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 156.19 Td (ter/ForgotPasswordModal.jsx) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 178.59 Td (Leaflet interactive GPS maps, Kerala district coordinate) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 167.39 Td (directory, email/username login, 2-step OTP signup &) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 293.57 156.19 Td (password recovery.) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 8702 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 5 of 7) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 779.89 Td (4. JWT Authentication & Security Lifecycle) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 772.89 m 549.28 772.89 l S
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 756.89 Td (HomeQuest AI secures its decoupled React + Django architecture with stateless JSON Web) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 743.09 Td (Tokens \(SimpleJWT 5.5.1\), signed using HMAC-SHA256 and enforced across all protected owner,) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 729.29 Td (history, and booking endpoints:) Tj ET
+0.761 0.608 0.388 rg 50.00 712.99 3.50 3.50 re f
+BT 60.00 710.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Token Lifetimes & Rotation: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Access tokens expire in 60 minutes; Refresh tokens last 7) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 697.09 Td (days with ROTATE_REFRESH_TOKENS=True and BLACKLIST_AFTER_ROTATION=True to prevent replay) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 683.69 Td (attacks.) Tj ET
+0.761 0.608 0.388 rg 50.00 669.79 3.50 3.50 re f
+BT 60.00 667.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (2-Step SMTP OTP Signup \(PendingRegistration\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Registrations stage pre-hashed passwords) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 653.89 Td (and a 10-minute 6-digit email OTP. Real User rows are created ONLY after valid OTP) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 640.49 Td (verification.) Tj ET
+0.761 0.608 0.388 rg 50.00 626.59 3.50 3.50 re f
+BT 60.00 624.09 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Flexible Credential Login \(EmailOrUsernameBackend\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Users sign in seamlessly with either) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 610.69 Td (their username or email address \(case-insensitive\).) Tj ET
+0.761 0.608 0.388 rg 50.00 596.79 3.50 3.50 re f
+BT 60.00 594.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Transparent 401 Auto-Refresh \(api.js\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (When an access token expires, Axios intercepts) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 580.89 Td (HTTP 401, calls /api/auth/token/refresh/, updates localStorage, and replays the failed) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 567.49 Td (request silently. If refresh fails, tokens are purged cleanly.) Tj ET
+0.761 0.608 0.388 rg 50.00 553.59 3.50 3.50 re f
+BT 60.00 551.09 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Strict Owner Data Isolation: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (/api/properties/?mine=true filters strictly by) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 537.69 Td (seller=request.user; /api/properties/enquiries/ filters strictly by) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 524.29 Td (property__seller=request.user.) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 497.89 Td (5. Where Machine Learning & AI Are Used \(How They Work\)) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 490.89 m 549.28 490.89 l S
+0.345 0.094 0.145 rg 46.00 460.89 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 466.89 Td (ML / AI System) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 152.66 466.89 Td (Source File) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 278.48 466.89 Td (Algorithm / Model) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 414.36 466.89 Td (User-Facing Output) Tj ET
+1.000 1.000 1.000 rg 46.00 407.09 503.28 53.80 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 407.09 m 549.28 407.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 448.39 Td (1. Kerala Price) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 437.19 Td (Valuation Engine) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 448.39 Td (Propertys/ml_pricing.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 448.39 Td (RandomForestRegressor \(100) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 437.19 Td (trees, depth 16\) +) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 425.99 Td (OneHotEncoder + Haversine) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 414.79 Td (GIS distances) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 448.39 Td (AI Price Advisor: Fair price) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 437.19 Td (in Lakhs/Cr, +/-5% range,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 425.99 Td (infrastructure boost %,) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 414.79 Td (5-tier verdict) Tj ET
+0.988 0.976 0.961 rg 46.00 353.29 503.28 53.80 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 353.29 m 549.28 353.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 394.59 Td (2. Personalized) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 383.39 Td (Recommender) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 394.59 Td (Propertys/recommender_eng) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 383.39 Td (ine.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 394.59 Td (TfidfVectorizer \(250) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 383.39 Td (features\) + Cosine) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 372.19 Td (Similarity + 5-Factor) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 360.99 Td (Multi-Variate Scoring) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 394.59 Td (Suggested For You & Hero) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 383.39 Td (Showcase: Dynamic 72%-98%) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 372.19 Td (Match + Explainable AI) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 360.99 Td (reason) Tj ET
+1.000 1.000 1.000 rg 46.00 299.49 503.28 53.80 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 299.49 m 549.28 299.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 340.79 Td (3. Hybrid RAG) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 329.59 Td (Assistant) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 152.66 340.79 Td (Chatbot/rag_engine.py) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 340.79 Td (Intent Classifier + TF-IDF) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 329.59 Td (Knowledge Retrieval + Regex) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 278.48 318.39 Td (NLP + Live SQL + Gemini LLM) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 340.79 Td (QuestBot live property) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 329.59 Td (search, platform help, and) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 318.39 Td (4-tone AI Express Interest) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 414.36 307.19 Td (drafting) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 277.49 Td (5.1 ML Engine 1: Kerala Price Valuation & Increment Engine \(ml_pricing.py\)) Tj ET
+0.761 0.608 0.388 rg 50.00 264.99 3.50 3.50 re f
+BT 60.00 262.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Haversine GIS Feature Engineering: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Computes exact great-circle distances from GPS) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 249.09 Td (coordinates to 31 NH 66 waypoints, 10 NH 544 waypoints, 16 MC Road waypoints, 5) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 235.69 Td (IT/transit hubs \(Infopark, Technopark, Cyberpark, CIAL, Kochi Metro\), and the nearest) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 222.29 Td (Kerala district center.) Tj ET
+0.761 0.608 0.388 rg 50.00 208.39 3.50 3.50 re f
+BT 60.00 205.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Random Forest Regression Pipeline: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Trained on 5,000 calibrated Kerala records) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 192.49 Td (\(kerala_real_estate_data.csv\) via Scikit-Learn Pipeline: ColumnTransformer\(OneHotEncoder) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 179.09 Td (on property_type & district + numeric passthrough\) ->) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 165.69 Td (RandomForestRegressor\(n_estimators=100, max_depth=16, min_samples_split=4\). Achieves R^2) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 152.29 Td (~ 0.98 on an 85/15 split and caches in RAM via Joblib \(kerala_price_model.pkl\).) Tj ET
+0.761 0.608 0.388 rg 50.00 138.39 3.50 3.50 re f
+BT 60.00 135.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Explainable Boosts & 5-Tier Verdict: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Quantifies infrastructure premiums \(+24.5% NH 66) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 122.49 Td (<=1 km, +16% <=2.5 km, +15% IT hub <=3.5 km, +10% urban center <=3 km, +8% Tier-1) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 109.09 Td (metro\), outputs a +/-5% fair range in Rs. Lakhs/Crores, and verdicts seller pricing) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 95.69 Td (\(UNDERPRICED_HIGH to OVERPRICED\).) Tj ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Length 8292 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 6 of 7) Tj ET
+0.984 0.969 0.949 rg 0.60 w 0.875 0.780 0.714 RG 46.00 737.89 503.28 60.00 re B
+0.345 0.094 0.145 rg 46.00 737.89 3.50 60.00 re f
+BT /F2 9.2 Tf 0.345 0.094 0.145 rg 58.00 783.89 Td (Haversine Geospatial Distance Formula \(ml_pricing.py & Propertys/views.py\)) Tj ET
+BT /F4 8.4 Tf 0.110 0.078 0.090 rg 58.00 767.89 Td (a = sin^2\(\(lat2 - lat1\)/2\) + cos\(lat1\) * cos\(lat2\) * sin^2\(\(lon2 - lon1\)/2\)) Tj ET
+BT /F4 8.4 Tf 0.110 0.078 0.090 rg 58.00 754.89 Td (distance_km = 2 * 6371.0 * atan2\(sqrt\(a\), sqrt\(1 - a\)\)) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 721.89 Td (5.2 ML Engine 2: Personalized Recommender \(recommender_engine.py\)) Tj ET
+0.761 0.608 0.388 rg 50.00 709.39 3.50 3.50 re f
+BT 60.00 706.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Multi-Signal Profile Weighting: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Combines PropertyLike \(highest priority weight 3.5x;) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 693.49 Td (works immediately for logged-in users and guests via liked_ids\), PropertyViewHistory) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 680.09 Td (with exponential recency decay w = \(1 + ln\(views\)\) * exp\(-0.04 * days_ago\), and) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 666.69 Td (UserSearchHistory.) Tj ET
+0.761 0.608 0.388 rg 50.00 652.79 3.50 3.50 re f
+BT 60.00 650.29 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (TF-IDF NLP Vectorization: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Uses TfidfVectorizer\(stop_words='english', max_features=250\)) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 636.89 Td (and cosine_similarity between the user's behavioral corpus and every candidate) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 623.49 Td (property's title, city, type, sub-type, and description.) Tj ET
+0.761 0.608 0.388 rg 50.00 609.59 3.50 3.50 re f
+BT 60.00 607.09 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (5-Factor Composite Score & Cold Start: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Combines location/GPS \(35%\), property type \(25%\),) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 593.69 Td (log-Gaussian budget curve \(20%\), TF-IDF text similarity \(12%\), and space fit \(8%\),) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 580.29 Td (applying a 1.15x like boost, 0.92x viewed novelty decay, explainable ai_reason copy, and) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 566.89 Td (an engagement/quality cold-start ranker for new visitors.) Tj ET
+0.984 0.969 0.949 rg 0.60 w 0.875 0.780 0.714 RG 46.00 498.49 503.28 60.00 re B
+0.345 0.094 0.145 rg 46.00 498.49 3.50 60.00 re f
+BT /F2 9.2 Tf 0.345 0.094 0.145 rg 58.00 544.49 Td (5-Factor Multi-Variate Recommendation Scoring Formula) Tj ET
+BT /F4 8.4 Tf 0.110 0.078 0.090 rg 58.00 528.49 Td (Score   = 0.35*S_loc + 0.25*S_type + 0.20*S_price + 0.12*S_tfidf + 0.08*S_area) Tj ET
+BT /F4 8.4 Tf 0.110 0.078 0.090 rg 58.00 515.49 Td (S_price = exp\(-1.4 * \(ln\(P / mean_P\)\)^2\)   |   S_area = exp\(-1.1 * \(ln\(A / mean_A\)\)^2\)) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 482.49 Td (5.3 AI Engine 3: Hybrid RAG Chatbot \(QuestBot\) & AI Express Interest) Tj ET
+0.761 0.608 0.388 rg 50.00 469.99 3.50 3.50 re f
+BT 60.00 467.49 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Intent Routing & Dual Retrieval: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Classifies messages into Greeting, Property Search, or) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 454.09 Td (Platform Help. Platform queries retrieve top guides via TfidfVectorizer cosine) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 440.69 Td (similarity \(> 0.08\). Property queries run regex NLP entity extraction \(23 Kerala cities,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 427.29 Td (4 property types, Lakhs/Crores budgets\) and execute live PostgreSQL ORM queries.) Tj ET
+0.761 0.608 0.388 rg 50.00 413.39 3.50 3.50 re f
+BT 60.00 410.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (Gemini LLM + Deterministic Fallback: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Augments prompts with real DB listings/guides and) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 397.49 Td (invokes Google Gemini v1beta \(gemini-2.5-flash -> fallback cascade\), switching) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 384.09 Td (automatically to structured fallback replies if offline.) Tj ET
+0.761 0.608 0.388 rg 50.00 370.19 3.50 3.50 re f
+BT 60.00 367.69 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (AI Express Interest: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Auto-identifies the logged-in user and drafts or immediately sends) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 354.29 Td (tailored inquiries in 4 tones \(ready_to_buy, professional, site_visit, negotiation\).) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 331.89 Td (5.4 GIS Proximity & Scroll-Driven 3D Architecture) Tj ET
+0.761 0.608 0.388 rg 50.00 319.39 3.50 3.50 re f
+BT 60.00 316.89 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (GPS Near Me Search: ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Combines browser Geolocation with server-side Haversine ranking) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 303.49 Td (\(/api/properties/nearby/\) and interactive Leaflet map pins.) Tj ET
+0.761 0.608 0.388 rg 50.00 289.59 3.50 3.50 re f
+BT 60.00 287.09 Td /F2 9.5 Tf 0.110 0.078 0.090 rg (3D Villa Landing Showcase \(ScrollVilla3D.jsx\): ) Tj /F1 9.5 Tf 0.200 0.173 0.180 rg (Opens on a pure-white HomeQuest AI) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 273.69 Td (editorial splash screen that dissolves smoothly on scroll as a photorealistic 2-story) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 260.29 Td (cantilevered villa builds piece-by-piece using Three.js RoomEnvironment IBL,) Tj ET
+BT /F1 9.5 Tf 0.200 0.173 0.180 rg 60.00 246.89 Td (RoundedBoxGeometry, and procedural PBR Canvas textures.) Tj ET
+BT /F3 15.5 Tf 0.345 0.094 0.145 rg 46.00 220.49 Td (6. Complete REST API Reference & Automated Testing) Tj ET
+1.00 w 0.875 0.780 0.714 RG 46.00 213.49 m 549.28 213.49 l S
+0.345 0.094 0.145 rg 46.00 183.49 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 189.49 Td (Module) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 122.46 189.49 Td (Endpoint\(s\)) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 318.74 189.49 Td (Auth) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 384.16 189.49 Td (Purpose) Tj ET
+1.000 1.000 1.000 rg 46.00 140.89 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 140.89 m 549.28 140.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 170.99 Td (Auth) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 170.99 Td (POST /api/auth/register/ | verify-email/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 159.79 Td (| resend-otp/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 170.99 Td (Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 170.99 Td (2-step 6-digit SMTP OTP) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 159.79 Td (registration \(User created only) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 148.59 Td (after valid OTP\)) Tj ET
+0.988 0.976 0.961 rg 46.00 109.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 109.49 m 549.28 109.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 128.39 Td (Auth) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 128.39 Td (POST /api/auth/login/ | token/refresh/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 128.39 Td (Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 128.39 Td (Username or email login returning) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 117.19 Td (JWT pair; rotating refresh exchange) Tj ET
+1.000 1.000 1.000 rg 46.00 78.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 78.09 m 549.28 78.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 96.99 Td (Auth) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 96.99 Td (POST /api/auth/forgot-password/ | reset-) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 85.79 Td (password/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 96.99 Td (Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 96.99 Td (6-digit recovery OTP dispatch and) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 85.79 Td (password reset with instant JWT) Tj ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 17 0 R >>
+endobj
+19 0 obj
+<< /Length 7719 >>
+stream
+0.6 w 0.875 0.780 0.714 RG 46.00 807.89 m 549.28 807.89 l S
+BT /F2 7.5 Tf 0.455 0.404 0.392 rg 46.00 813.89 Td (HOMEQUEST AI  |  TECHNICAL & ARCHITECTURAL DOCUMENTATION) Tj ET
+0.6 w 0.875 0.780 0.714 RG 46.00 34.00 m 549.28 34.00 l S
+BT /F1 8.0 Tf 0.455 0.404 0.392 rg 493.28 22.00 Td (Page 7 of 7) Tj ET
+0.345 0.094 0.145 rg 46.00 775.89 503.28 20.00 re f
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 52.00 781.89 Td (Module) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 122.46 781.89 Td (Endpoint\(s\)) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 318.74 781.89 Td (Auth) Tj ET
+BT /F2 8.4 Tf 1.000 1.000 1.000 rg 384.16 781.89 Td (Purpose) Tj ET
+0.988 0.976 0.961 rg 46.00 733.29 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 733.29 m 549.28 733.29 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 763.39 Td (Profile &) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 752.19 Td (History) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 763.39 Td (GET/PATCH /api/auth/profile/ | /history/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 763.39 Td (JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 763.39 Td (Protected profile CRUD and) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 752.19 Td (authenticated browsing/search) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 740.99 Td (history) Tj ET
+1.000 1.000 1.000 rg 46.00 701.89 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 701.89 m 549.28 701.89 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 720.79 Td (Properties) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 720.79 Td (GET/POST /api/properties/ \(?mine=true\)) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 720.79 Td (Read Pub /) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 709.59 Td (Write JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 720.79 Td (Marketplace feed or strictly owner-) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 709.59 Td (isolated seller portfolio CRUD) Tj ET
+0.988 0.976 0.961 rg 46.00 670.49 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 670.49 m 549.28 670.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 689.39 Td (Gallery &) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 678.19 Td (Likes) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 689.39 Td (POST /api/properties/{id}/images/ | like/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 689.39 Td (JWT / Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 689.39 Td (Batch gallery upload with captions;) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 678.19 Td (wishlist like toggle synced to AI) Tj ET
+1.000 1.000 1.000 rg 46.00 639.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 639.09 m 549.28 639.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 657.99 Td (GIS Nearby) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 657.99 Td (GET /api/properties/nearby/?lat=&lng=&rad) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 646.79 Td (ius=50) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 657.99 Td (Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 657.99 Td (Server-side Haversine proximity) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 646.79 Td (search ranking plots & homes by km) Tj ET
+0.988 0.976 0.961 rg 46.00 607.69 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 607.69 m 549.28 607.69 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 626.59 Td (ML Valuation) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 626.59 Td (POST /api/properties/predict_price/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 626.59 Td (Public) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 626.59 Td (Random Forest valuation, NH 66 / IT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 615.39 Td (hub boost %, and price verdict) Tj ET
+1.000 1.000 1.000 rg 46.00 565.09 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 565.09 m 549.28 565.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 595.19 Td (ML) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 583.99 Td (Recommender) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 595.19 Td (GET) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 583.99 Td (/api/properties/recommendations/?limit=6) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 595.19 Td (Public / JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 595.19 Td (Personalized content-based) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 583.99 Td (suggestions using Likes, Views &) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 572.79 Td (Searches) Tj ET
+0.988 0.976 0.961 rg 46.00 522.49 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 522.49 m 549.28 522.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 552.59 Td (Enquiries) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 552.59 Td (GET/POST/PATCH /api/properties/enquiries/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 552.59 Td (Pub Create /) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 541.39 Td (JWT Mgt) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 552.59 Td (Buyer inquiries and owner-scoped) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 541.39 Td (lead pipeline) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 530.19 Td (\(PENDING/CONTACTED/RESOLVED\)) Tj ET
+1.000 1.000 1.000 rg 46.00 491.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 491.09 m 549.28 491.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 509.99 Td (Purchases) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 509.99 Td (POST /api/properties/purchases/ |) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 498.79 Td (/{id}/sign/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 509.99 Td (Public / JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 509.99 Td (Kerala 8% stamp duty + 2% reg fee) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 498.79 Td (calculator & digital Sale Agreement) Tj ET
+0.988 0.976 0.961 rg 46.00 448.49 503.28 42.60 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 448.49 m 549.28 448.49 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 478.59 Td (Tours) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 478.59 Td (GET/POST /api/properties/tours/ |) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 467.39 Td (reschedule/ | checklist/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 478.59 Td (JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 478.59 Td (Visit calendar, one-click) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 467.39 Td (rescheduling, and buyer/seller JSON) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 456.19 Td (checklists) Tj ET
+1.000 1.000 1.000 rg 46.00 417.09 503.28 31.40 re f
+0.50 w 0.875 0.780 0.714 RG 46.00 417.09 m 549.28 417.09 l S
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 435.99 Td (AI RAG) Tj ET
+BT /F2 8.2 Tf 0.110 0.078 0.090 rg 52.00 424.79 Td (Chatbot) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 435.99 Td (POST /api/chatbot/query/ | draft_inquiry/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 122.46 424.79 Td (| auto_send_inquiry/) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 318.74 435.99 Td (Public / JWT) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 435.99 Td (QuestBot Hybrid RAG queries and AI-) Tj ET
+BT /F1 8.2 Tf 0.200 0.173 0.180 rg 384.16 424.79 Td (generated buyer inquiries) Tj ET
+BT /F2 11.5 Tf 0.110 0.078 0.090 rg 46.00 395.09 Td (6.1 Automated Test Harness & Build Verification) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 380.09 Td (Executing 'python manage.py test' automatically switches DATABASES['default'] in) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 366.29 Td (myproject/settings.py to an isolated in-memory SQLite database, verifying Accounts/tests.py,) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 352.49 Td (Propertys/tests.py, and Chatbot/tests.py rapidly without modifying PostgreSQL data. Frontend) Tj ET
+BT /F1 9.8 Tf 0.200 0.173 0.180 rg 46.00 338.69 Td (bundling integrity is verified via 'npm --prefix frontend run build'.) Tj ET
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >> /Contents 19 0 R >>
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000163 00000 n 
+0000000233 00000 n 
+0000000308 00000 n 
+0000000379 00000 n 
+0000000447 00000 n 
+0000003145 00000 n 
+0000003307 00000 n 
+0000012327 00000 n 
+0000012490 00000 n 
+0000021010 00000 n 
+0000021174 00000 n 
+0000030948 00000 n 
+0000031112 00000 n 
+0000039867 00000 n 
+0000040031 00000 n 
+0000048376 00000 n 
+0000048540 00000 n 
+0000056312 00000 n 
+trailer
+<< /Size 21 /Root 1 0 R >>
+startxref
+56476
+%%EOF

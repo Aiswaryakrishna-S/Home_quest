@@ -1,0 +1,264 @@
+/* =====================================================================
+   OLX-STYLE "INCLUDE SOME DETAILS" ATTRIBUTES FORM
+   Pixel-perfect match to OLX design with high-contrast clickable chip buttons
+   ===================================================================== */
+
+.olx-details-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1.75rem 2rem;
+  margin: 1.25rem 0 1.75rem 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  font-family: inherit;
+}
+
+.olx-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.olx-category-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #e6f7f6;
+  color: #002f34;
+  border: 1px solid #002f34;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.olx-details-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #002f34;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 1.5rem 0 1.35rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.olx-attribute-group {
+  margin-bottom: 1.35rem;
+}
+
+.olx-attribute-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #002f34;
+  margin-bottom: 0.5rem;
+}
+
+.olx-req-star {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+/* ── Category Buttons Row ── */
+.olx-category-buttons-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.olx-category-btn {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #002f34;
+  transition: all 0.15s ease-in-out;
+  outline: none;
+  user-select: none;
+}
+
+.olx-category-btn:hover:not(.active) {
+  border-color: #002f34;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.olx-category-btn.active {
+  background: #002f34 !important;
+  color: #ffffff !important;
+  border: 2px solid #002f34 !important;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 47, 52, 0.22);
+}
+
+.olx-category-btn.active .cat-icon {
+  filter: brightness(1.2);
+}
+
+.olx-category-btn.active .cat-label {
+  color: #ffffff !important;
+}
+
+.cat-icon {
+  font-size: 1.15rem;
+}
+
+.cat-label {
+  flex: 1;
+  text-align: left;
+}
+
+.cat-check {
+  font-weight: 900;
+  color: #4ade80;
+  font-size: 0.95rem;
+}
+
+/* ── Chips Row for Sub-types, BHK, Bathrooms, Furnishing, Parking ── */
+.olx-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Clickable button pill (matching OLX screenshot) */
+.olx-chip-btn {
+  background: #ffffff;
+  border: 1.5px solid #002f34;
+  border-radius: 4px;
+  padding: 0.45rem 1.15rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #002f34;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.olx-chip-btn:hover:not(.active) {
+  background: #e6f7f6;
+  border-color: #002f34;
+  color: #002f34;
+  transform: translateY(-1px);
+}
+
+/* Selected button state - Dark Teal (#002f34) with White Text & Green Tick */
+.olx-chip-btn.active {
+  background: #002f34 !important;
+  border: 2px solid #002f34 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 47, 52, 0.25);
+  transform: translateY(-1px);
+}
+
+.olx-chip-btn.active span {
+  color: #ffffff !important;
+}
+
+.chip-tick {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #4ade80;
+  margin-left: 2px;
+}
+
+/* Compact button for single digits (BHK, Bathrooms, Parking) */
+.olx-chip-btn.btn-sm {
+  min-width: 46px;
+  padding: 0.45rem 0.85rem;
+  text-align: center;
+}
+
+/* Form fields inside attributes */
+.olx-field-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.olx-input-control {
+  width: 100%;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.olx-input-control:focus {
+  border-color: #002f34 !important;
+  box-shadow: 0 0 0 2px rgba(0, 47, 52, 0.15) !important;
+}
+
+.olx-select-control {
+  width: 100%;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.olx-select-control:focus {
+  border-color: #002f34 !important;
+  box-shadow: 0 0 0 2px rgba(0, 47, 52, 0.15) !important;
+}
+
+.olx-meta-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.olx-sub-caption {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.olx-char-count {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.olx-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .olx-details-card {
+    padding: 1.25rem 1rem;
+  }
+  .olx-category-buttons-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .olx-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

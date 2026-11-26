@@ -160,7 +160,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
         {/* Header */}
         <div className="vsm-header">
           <div className="vsm-title-row">
-            <span className="vsm-icon-badge">📅</span>
+            <span className="vsm-icon-badge">CAL</span>
             <div>
               <h2>Visit Calendar & Tour Management</h2>
               <p className="vsm-subtitle">
@@ -176,7 +176,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
         {/* Global Feedback Alert */}
         {actionAlert.text && (
           <div className={`vsm-alert alert-${actionAlert.type}`}>
-            {actionAlert.type === 'success' ? '✅' : '⚠️'} {actionAlert.text}
+            {actionAlert.type === 'success' ? '✓ ' : '! '} {actionAlert.text}
           </div>
         )}
 
@@ -213,13 +213,13 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                 className={`role-chip ${activeRole === 'host' ? 'active' : ''}`}
                 onClick={() => setActiveRole('host')}
               >
-                🏠 As Host / Owner
+                As Host / Owner
               </button>
               <button
                 className={`role-chip ${activeRole === 'visitor' ? 'active' : ''}`}
                 onClick={() => setActiveRole('visitor')}
               >
-                👤 As Visitor / Buyer
+                As Visitor / Buyer
               </button>
             </div>
           )}
@@ -234,7 +234,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
             </div>
           ) : filteredTours.length === 0 ? (
             <div className="vsm-empty-view">
-              <span className="vsm-empty-icon">🗓️</span>
+              <span className="vsm-empty-icon">[CAL]</span>
               <h3>No Tours Found</h3>
               <p>
                 {activeFilter === 'ALL'
@@ -269,11 +269,6 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                         <div>
                           <div className="vsm-badges-row">
                             <span className={`vsm-status-badge badge-${tour.status.toLowerCase()}`}>
-                              {tour.status === 'CONFIRMED' && '✅ '}
-                              {tour.status === 'UPCOMING' && '⏳ '}
-                              {tour.status === 'RESCHEDULED' && '🔄 '}
-                              {tour.status === 'COMPLETED' && '🏁 '}
-                              {tour.status === 'CANCELLED' && '❌ '}
                               {tour.status}
                             </span>
                             <span className="vsm-prop-type-badge">{tour.property_type}</span>
@@ -291,7 +286,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                             {tour.property_title}
                           </h3>
                           <p className="vsm-prop-address">
-                            📍 {tour.property_address}, {tour.property_city} &bull; ₹{parseFloat(tour.property_price || 0).toLocaleString('en-IN')}
+                            {tour.property_address}, {tour.property_city} &bull; ₹{parseFloat(tour.property_price || 0).toLocaleString('en-IN')}
                           </p>
                         </div>
                       </div>
@@ -299,10 +294,10 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                       {/* Appointment Time Badge */}
                       <div className="vsm-schedule-badge-box">
                         <div className="schedule-date-pill">
-                          📅 {new Date(tour.scheduled_date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(tour.scheduled_date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                         </div>
                         <div className="schedule-slot-pill">
-                          ⏰ {tour.time_slot}
+                          {tour.time_slot}
                         </div>
                       </div>
                     </div>
@@ -310,7 +305,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                     {/* Reschedule alert banner if applicable */}
                     {tour.rescheduled_count > 0 && tour.previous_date && (
                       <div className="vsm-reschedule-history-banner">
-                        <span>🔄</span>
+                        <span>[!]</span>
                         <div>
                           <strong>Rescheduled ({tour.rescheduled_count} {tour.rescheduled_count === 1 ? 'time' : 'times'}):</strong>
                           <span> Moved from {new Date(tour.previous_date).toLocaleDateString()} ({tour.previous_time_slot}).</span>
@@ -324,12 +319,12 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                       <div className="contact-item">
                         <span className="contact-label">HOST / OWNER:</span>
                         <strong className="contact-name">{tour.seller_name}</strong>
-                        <span className="contact-meta">📞 {tour.seller_phone}</span>
+                        <span className="contact-meta">Tel: {tour.seller_phone}</span>
                       </div>
                       <div className="contact-item">
                         <span className="contact-label">VISITOR:</span>
                         <strong className="contact-name">{tour.visitor_name}</strong>
-                        <span className="contact-meta">📞 {tour.visitor_phone} &bull; ✉️ {tour.visitor_email}</span>
+                        <span className="contact-meta">Tel: {tour.visitor_phone} &bull; {tour.visitor_email}</span>
                       </div>
                     </div>
 
@@ -344,7 +339,6 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                     <div className="vsm-checklist-container">
                       <div className="checklist-header">
                         <div className="checklist-title">
-                          <span>📋</span>
                           <strong>{isHost ? 'Host Preparation Checklist' : 'Visitor Readiness Checklist'}</strong>
                         </div>
                         <div className="checklist-progress-text">
@@ -389,7 +383,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                     {/* ── ONE-CLICK RESCHEDULE ACCORDION ── */}
                     {isRescheduling && (
                       <div className="vsm-reschedule-panel">
-                        <h4>🔄 Reschedule Appointment</h4>
+                        <h4>Reschedule Appointment</h4>
                         <div className="reschedule-grid">
                           <div className="form-group">
                             <label>New Date</label>
@@ -463,7 +457,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                           className="vsm-link-calendar"
                           title="Add this tour to Google Calendar"
                         >
-                          📅 Add to Google Calendar
+                          Add to Google Calendar
                         </a>
                       </div>
 
@@ -475,7 +469,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                             className="vsm-btn-reschedule"
                             onClick={() => handleStartReschedule(tour)}
                           >
-                            🔄 Reschedule Tour
+                            Reschedule Tour
                           </button>
                         )}
 
@@ -487,7 +481,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                             disabled={submittingAction}
                             onClick={() => handleUpdateStatus(tour.id, 'CONFIRMED')}
                           >
-                            ✅ Confirm Tour
+                            Confirm Tour
                           </button>
                         )}
 
@@ -499,7 +493,7 @@ export default function VisitScheduleManager({ user, onClose, onViewProperty }) 
                             disabled={submittingAction}
                             onClick={() => handleUpdateStatus(tour.id, 'COMPLETED')}
                           >
-                            🏁 Mark Completed
+                            Mark Completed
                           </button>
                         )}
 

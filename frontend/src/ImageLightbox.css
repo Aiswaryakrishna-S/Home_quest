@@ -1,0 +1,124 @@
+/* =====================================================================
+   FULL-SCREEN IMAGE LIGHTBOX OVERLAY
+   ===================================================================== */
+
+.imglb-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.94);
+  backdrop-filter: blur(8px);
+  z-index: 25000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  animation: imglbFadeIn 0.18s ease-out;
+}
+
+@keyframes imglbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.imglb-topbar {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.imglb-counter {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.imglb-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.imglb-close-btn:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.imglb-stage {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.75rem 0;
+  min-height: 0;
+}
+
+.imglb-full-img {
+  max-width: 92%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  background: #0f172a;
+}
+
+.imglb-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  z-index: 3;
+}
+
+.imglb-nav-btn:hover {
+  background: #002f34;
+  border-color: #38bdf8;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.imglb-prev {
+  left: 0.5rem;
+}
+
+.imglb-next {
+  right: 0.5rem;
+}
+
+.imglb-caption-bar {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  max-width: 900px;
+  text-align: center;
+}
