@@ -1014,14 +1014,6 @@ export default function HomePage({
         )}
       </section>
 
-      {/* ── TRUST & COMPLIANCE BADGES ── */}
-      <div className="hq-trust-badges-strip">
-        <div className="hq-trust-badge-card">100% Encumbrance Free</div>
-        <div className="hq-trust-badge-card">Zero Brokerage Markups</div>
-        <div className="hq-trust-badge-card">SRO Registry Synced</div>
-        <div className="hq-trust-badge-card">256-bit AES Document Vault</div>
-      </div>
-
       {/* ── FOOTER ── */}
       <footer className="hq-editorial-footer">
         <div className="hq-footer-inner">

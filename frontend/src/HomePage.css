@@ -967,34 +967,8 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   BOTTOM TRUST BADGES & FOOTER
+   FOOTER
    ═══════════════════════════════════════════════════════════════════ */
-.hq-trust-badges-strip {
-  max-width: 1200px;
-  margin: 0 auto 3rem auto;
-  padding: 0 1.25rem;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .hq-trust-badges-strip {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.hq-trust-badge-card {
-  background: #ffffff;
-  border: 1px solid var(--hq-border-light);
-  border-radius: 12px;
-  padding: 0.85rem;
-  text-align: center;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--hq-text-muted);
-}
-
 .hq-editorial-footer {
   background: #ffffff;
   border-top: 1px solid var(--hq-border-light);
